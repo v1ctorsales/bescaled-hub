@@ -1,10 +1,8 @@
-export default function IconToggleButton({ icon, tooltip, active, onClick, variant }) {
+export default function IconToggleButton({ icon, tooltip, active, onClick }) {
   return (
     <button
       type="button"
-      className={`icon-toggle-btn ${variant ? `icon-toggle-btn--${variant}` : ""} ${
-        active ? "is-active" : ""
-      }`}
+      className={`icon-toggle-btn ${active ? "is-active" : ""}`}
       data-tooltip={tooltip}
       onClick={onClick}
       aria-label={tooltip}

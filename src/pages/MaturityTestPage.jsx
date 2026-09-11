@@ -5,6 +5,8 @@ import { useCompanyData } from "../context/CompanyDataContext";
 import Header from "../components/Header";
 import ScoreSelector from "../components/ScoreSelector";
 import IconToggleButton from "../components/IconToggleButton";
+import CommentIcon from "../components/icons/CommentIcon";
+import HelpIcon from "../components/icons/HelpIcon";
 import {
   maturityDimensions,
   MATURITY_STAGES,
@@ -219,18 +221,34 @@ export default function MaturityTestPage() {
                                 <h4 className="maturity-stage__title">
                                   {stage.label}
                                 </h4>
+                              </div>
+
+                              <div className="maturity-stage__row">
+                                <ul className="maturity-stage__criteria">
+                                  {dimension.stages[stage.id].map((c) => (
+                                    <li key={c}>{c}</li>
+                                  ))}
+                                </ul>
+
+                                <ScoreSelector
+                                  value={answer.score}
+                                  disabled={answer.dontUnderstand}
+                                  onChange={(score) =>
+                                    updateStage(dimension.id, stage.id, { score })
+                                  }
+                                />
+
                                 <div className="maturity-stage__icons">
                                   <IconToggleButton
-                                    icon="💬"
+                                    icon={<CommentIcon />}
                                     tooltip="Add a comment"
                                     active={commentOpen}
                                     onClick={() => toggleComment(key)}
                                   />
                                   <IconToggleButton
-                                    icon="❓"
+                                    icon={<HelpIcon />}
                                     tooltip="I don't understand this"
                                     active={answer.dontUnderstand}
-                                    variant="flag"
                                     onClick={() =>
                                       updateStage(dimension.id, stage.id, {
                                         dontUnderstand: !answer.dontUnderstand,
@@ -239,20 +257,6 @@ export default function MaturityTestPage() {
                                   />
                                 </div>
                               </div>
-
-                              <ul className="maturity-stage__criteria">
-                                {dimension.stages[stage.id].map((c) => (
-                                  <li key={c}>{c}</li>
-                                ))}
-                              </ul>
-
-                              <ScoreSelector
-                                value={answer.score}
-                                disabled={answer.dontUnderstand}
-                                onChange={(score) =>
-                                  updateStage(dimension.id, stage.id, { score })
-                                }
-                              />
 
                               {commentOpen && (
                                 <textarea
