@@ -28,4 +28,5 @@ export const READINESS_METRIC_LABELS = {
 
 export const READINESS_YEARS = [2026, 2027, 2028];
 
-export const READINESS_SCALE_MAX = 8;
+// Matches the KTH Innovation Readiness Level model (1-9 scale per metric).
+export const READINESS_SCALE_MAX = 9;

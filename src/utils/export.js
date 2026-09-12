@@ -1,3 +1,5 @@
+import ExcelJS from "exceljs";
+
 // Small helpers to let export buttons actually produce a downloadable file
 // instead of being pure placeholders.
 
@@ -8,14 +10,19 @@ export function downloadJson(data, filename) {
   triggerDownload(blob, filename);
 }
 
-export function downloadCsv(rows, filename) {
+export async function downloadXlsx(rows, filename, sheetName = "Sheet1") {
   if (!rows.length) return;
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet(sheetName);
   const headers = Object.keys(rows[0]);
-  const csvLines = [
-    headers.join(","),
-    ...rows.map((row) => headers.map((h) => JSON.stringify(row[h] ?? "")).join(",")),
-  ];
-  const blob = new Blob([csvLines.join("\n")], { type: "text/csv" });
+  sheet.columns = headers.map((header) => ({ header, key: header, width: 24 }));
+  sheet.getRow(1).font = { bold: true };
+  sheet.addRows(rows);
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
   triggerDownload(blob, filename);
 }
 

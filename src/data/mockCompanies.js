@@ -1,4 +1,5 @@
 import { maturityDimensions, MATURITY_STAGES } from "./maturityDimensions";
+import { READINESS_METRICS, READINESS_YEARS } from "../config";
 
 // ---------------------------------------------------------------------------
 // MOCK DATA — in-memory only, resets on page reload.
@@ -147,3 +148,51 @@ export const mockCompanies = [
     maturityAnswers: {},
   },
 ];
+
+// Admin-editable settings (login emails + internal notes), edited via the
+// CompanySettingsModal. Kept separate from the seed data above so every
+// company gets a sane default (its primary contact email as the first
+// login email) without repeating it by hand for each entry.
+mockCompanies.forEach((company) => {
+  company.settings = { loginEmails: [company.contactEmail], notes: "" };
+});
+
+// Writes go through this helper (rather than components mutating a company
+// object they read during render) so the update happens on a fresh lookup,
+// not on a reference the render output already depends on.
+// TODO(backend): replace with a real PATCH /companies/:id call.
+export function updateCompanySettings(companyId, settings) {
+  const company = mockCompanies.find((c) => c.id === companyId);
+  if (company) company.settings = settings;
+}
+
+// TODO(backend): replace with a real POST /companies call.
+export function addCompany({ name, contactEmail }) {
+  const id = Math.max(0, ...mockCompanies.map((c) => c.id)) + 1;
+  const zeroedMetrics = () =>
+    READINESS_METRICS.reduce((acc, metric) => ({ ...acc, [metric]: 0 }), {});
+
+  const company = {
+    id,
+    name,
+    contactEmail,
+    subscribed: true,
+    filledReadinessForm: false,
+    filledMaturityTest: false,
+    readinessLevels: READINESS_YEARS.reduce(
+      (acc, year) => ({ ...acc, [year]: zeroedMetrics() }),
+      {},
+    ),
+    maturityAnswers: {},
+    settings: { loginEmails: contactEmail ? [contactEmail] : [], notes: "" },
+  };
+
+  mockCompanies.push(company);
+  return company;
+}
+
+// TODO(backend): replace with a real DELETE /companies/:id call.
+export function deleteCompany(companyId) {
+  const index = mockCompanies.findIndex((c) => c.id === companyId);
+  if (index !== -1) mockCompanies.splice(index, 1);
+}

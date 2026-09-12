@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { downloadCsv } from "./export";
+import { downloadXlsx } from "./export";
 import { renderRadarChartImage } from "./radarCanvas";
 import { READINESS_METRICS, READINESS_YEARS } from "../config";
 import {
@@ -9,12 +9,12 @@ import {
 } from "../data/maturityDimensions";
 
 // ---------------------------------------------------------------------------
-// Admin exports: a flat CSV for spreadsheets, and a PDF report that embeds
-// each company's radar chart (rendered via src/utils/radarCanvas.js, since
-// jsPDF can only place raster/vector images, not live recharts SVGs).
+// Admin exports: an XLSX spreadsheet, and a PDF report that embeds each
+// company's radar chart (rendered via src/utils/radarCanvas.js, since jsPDF
+// can only place raster/vector images, not live recharts SVGs).
 // ---------------------------------------------------------------------------
 
-export function exportCompaniesCsv(companies) {
+export function exportCompaniesXlsx(companies) {
   const rows = companies.map((c) => ({
     id: c.id,
     name: c.name,
@@ -23,7 +23,7 @@ export function exportCompaniesCsv(companies) {
     filledReadinessForm: c.filledReadinessForm,
     filledMaturityTest: c.filledMaturityTest,
   }));
-  downloadCsv(rows, "bescalehub_companies.csv");
+  downloadXlsx(rows, "bescalehub_companies.xlsx", "Companies");
 }
 
 export function exportCompaniesPdf(companies) {
@@ -82,7 +82,7 @@ export function exportCompaniesPdf(companies) {
   doc.save("bescalehub_companies.pdf");
 }
 
-export function exportCompanyCsv(company) {
+export function exportCompanyXlsx(company) {
   const rows = [
     { section: "info", key: "name", value: company.name },
     { section: "info", key: "contactEmail", value: company.contactEmail },
@@ -121,7 +121,7 @@ export function exportCompanyCsv(company) {
     });
   });
 
-  downloadCsv(rows, `${company.name.replace(/\s+/g, "_")}.csv`);
+  downloadXlsx(rows, `${company.name.replace(/\s+/g, "_")}.xlsx`, "Company");
 }
 
 export function exportCompanyPdf(company) {

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import GoogleButton from "../components/GoogleButton";
-import ThemeToggle from "../components/ThemeToggle";
+import logo from "../assets/bescaled1.png";
 import { IS_ADMIN_VIEW } from "../config";
 
 export default function Login() {
@@ -22,11 +22,10 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      <div className="login-page__theme-toggle">
-        <ThemeToggle />
-      </div>
       <div className="login-card">
-        <h1 className="login-card__logo">BeScaled Hub </h1>
+        <div className="login-card__logo-wrap">
+          <img src={logo} alt="BeScaled" className="login-card__logo" />
+        </div>
         <p className="login-card__subtitle">
           Assess and track your company's innovation maturity.
         </p>

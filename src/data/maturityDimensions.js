@@ -181,3 +181,39 @@ export const maturityDimensions = [
     },
   },
 ];
+
+export const TOTAL_MATURITY_ITEMS = maturityDimensions.length * MATURITY_STAGES.length;
+
+// Shared helpers for building/merging a company's maturity answers — used by
+// CompanyDataContext (the live editable draft) and MaturityTestPage.
+export function createBlankMaturityAnswers() {
+  const answers = {};
+  maturityDimensions.forEach((dimension) => {
+    answers[dimension.id] = {};
+    MATURITY_STAGES.forEach((stage) => {
+      answers[dimension.id][stage.id] = { score: 0, comment: "", dontUnderstand: false };
+    });
+  });
+  return answers;
+}
+
+// Defensive merge so a partial/missing saved answer never crashes the form —
+// any dimension/stage not present in `saved` falls back to a blank entry.
+export function mergeMaturityAnswers(saved) {
+  const answers = createBlankMaturityAnswers();
+  maturityDimensions.forEach((dimension) => {
+    MATURITY_STAGES.forEach((stage) => {
+      const existing = saved?.[dimension.id]?.[stage.id];
+      if (existing) answers[dimension.id][stage.id] = { ...existing };
+    });
+  });
+  return answers;
+}
+
+export function allMaturityKeys() {
+  const keys = new Set();
+  maturityDimensions.forEach((dimension) => {
+    MATURITY_STAGES.forEach((stage) => keys.add(`${dimension.id}:${stage.id}`));
+  });
+  return keys;
+}

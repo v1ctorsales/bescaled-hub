@@ -1,11 +1,17 @@
 import { createContext, useContext, useState } from "react";
 import { mockCompanies } from "../data/mockCompanies";
+import { mergeMaturityAnswers, allMaturityKeys } from "../data/maturityDimensions";
 
 // ---------------------------------------------------------------------------
 // "Current company" data for the logged-in user's dashboard.
 // TODO(backend): the current company should come from the authenticated
 // user's session/account, not be hardcoded to the first mock company. Reads
 // and writes below should become real API calls once a backend exists.
+//
+// The maturity test answers/progress live here (not inside
+// MaturityTestPage's local state) so partial progress survives navigating
+// away and back — e.g. the dashboard's "Continue assessment" button reopens
+// the form exactly where the respondent left off.
 // ---------------------------------------------------------------------------
 
 const MY_COMPANY = mockCompanies[0];
@@ -16,7 +22,12 @@ export function CompanyDataProvider({ children }) {
   const [readinessLevels, setReadinessLevels] = useState(MY_COMPANY.readinessLevels);
   const [readinessFormFilled, setReadinessFormFilled] = useState(MY_COMPANY.filledReadinessForm);
   const [maturityTestFilled, setMaturityTestFilled] = useState(MY_COMPANY.filledMaturityTest);
-  const [maturityAnswers, setMaturityAnswers] = useState(MY_COMPANY.maturityAnswers);
+  const [maturityAnswers, setMaturityAnswers] = useState(() =>
+    mergeMaturityAnswers(MY_COMPANY.maturityAnswers),
+  );
+  const [maturityTouched, setMaturityTouched] = useState(() =>
+    MY_COMPANY.filledMaturityTest ? allMaturityKeys() : new Set(),
+  );
 
   function updateReadiness(year, metric, value) {
     setReadinessLevels((prev) => ({
@@ -26,8 +37,18 @@ export function CompanyDataProvider({ children }) {
     setReadinessFormFilled(true);
   }
 
-  function submitMaturityTest(answers) {
-    setMaturityAnswers(answers);
+  function updateMaturityAnswer(dimensionId, stageId, patch) {
+    setMaturityAnswers((prev) => ({
+      ...prev,
+      [dimensionId]: {
+        ...prev[dimensionId],
+        [stageId]: { ...prev[dimensionId][stageId], ...patch },
+      },
+    }));
+    setMaturityTouched((prev) => new Set(prev).add(`${dimensionId}:${stageId}`));
+  }
+
+  function submitMaturityTest() {
     setMaturityTestFilled(true);
   }
 
@@ -40,6 +61,8 @@ export function CompanyDataProvider({ children }) {
         updateReadiness,
         maturityTestFilled,
         maturityAnswers,
+        maturityTouched,
+        updateMaturityAnswer,
         submitMaturityTest,
       }}
     >

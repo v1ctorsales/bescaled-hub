@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams, Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Header from "../components/Header";
 import Tabs from "../components/Tabs";
@@ -7,27 +7,41 @@ import StatusBadge from "../components/StatusBadge";
 import ScoreDots from "../components/ScoreDots";
 import ReadinessTable from "../components/ReadinessTable";
 import RadarChartView from "../components/RadarChartView";
-import { mockCompanies } from "../data/mockCompanies";
+import IconToggleButton from "../components/IconToggleButton";
+import SettingsIcon from "../components/icons/SettingsIcon";
+import CompanySettingsModal from "../components/CompanySettingsModal";
+import {
+  mockCompanies,
+  updateCompanySettings,
+  deleteCompany,
+} from "../data/mockCompanies";
 import {
   maturityDimensions,
   MATURITY_STAGES,
 } from "../data/maturityDimensions";
 import { READINESS_YEARS } from "../config";
-import { exportCompanyCsv, exportCompanyPdf } from "../utils/adminExport";
+import { exportCompanyXlsx, exportCompanyPdf } from "../utils/adminExport";
 
 export default function CompanyDetailPage() {
   const { user } = useAuth();
   const { id } = useParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("readiness");
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   if (!user) return <Navigate to="/login" replace />;
 
   const company = mockCompanies.find((c) => c.id === Number(id));
   if (!company) return <Navigate to="/admin" replace />;
 
+  function handleDelete() {
+    deleteCompany(company.id);
+    navigate("/admin");
+  }
+
   return (
     <div className="page">
-      <Header title="BeScaled Hub  (admin)" />
+      <Header subtitle="Admin" />
       <main className="page__content">
         <Link to="/admin" className="back-link">
           ← Back to companies
@@ -49,9 +63,9 @@ export default function CompanyDetailPage() {
               </span>
               <button
                 className="btn-secondary"
-                onClick={() => exportCompanyCsv(company)}
+                onClick={() => exportCompanyXlsx(company)}
               >
-                Export CSV
+                Export XLSX
               </button>
               <button
                 className="btn-primary"
@@ -59,12 +73,17 @@ export default function CompanyDetailPage() {
               >
                 Export PDF
               </button>
+              <IconToggleButton
+                icon={<SettingsIcon />}
+                tooltip="Company settings"
+                onClick={() => setSettingsOpen(true)}
+              />
             </div>
           </div>
 
           <Tabs
             tabs={[
-              { id: "readiness", label: "Innovation Readiness Level" },
+              { id: "readiness", label: "KTH - Innovation Readiness Level" },
               { id: "maturity", label: "AI Maturity Test" },
             ]}
             activeTab={activeTab}
@@ -77,17 +96,21 @@ export default function CompanyDetailPage() {
                 <StatusBadge filled={company.filledReadinessForm} />
               </div>
               {company.filledReadinessForm ? (
-                <>
-                  <ReadinessTable
-                    readinessLevels={company.readinessLevels}
-                    years={READINESS_YEARS}
-                    editable={false}
-                  />
-                  <RadarChartView
-                    readinessLevels={company.readinessLevels}
-                    years={READINESS_YEARS}
-                  />
-                </>
+                <div className="readiness-layout">
+                  <div className="readiness-layout__table">
+                    <ReadinessTable
+                      readinessLevels={company.readinessLevels}
+                      years={READINESS_YEARS}
+                      editable={false}
+                    />
+                  </div>
+                  <div className="readiness-layout__chart">
+                    <RadarChartView
+                      readinessLevels={company.readinessLevels}
+                      years={READINESS_YEARS}
+                    />
+                  </div>
+                </div>
               ) : (
                 <p className="tab-panel__empty">
                   This company hasn't completed the Readiness Level assessment
@@ -186,6 +209,15 @@ export default function CompanyDetailPage() {
           )}
         </section>
       </main>
+
+      {settingsOpen && (
+        <CompanySettingsModal
+          company={company}
+          onClose={() => setSettingsOpen(false)}
+          onSave={(settings) => updateCompanySettings(company.id, settings)}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 }

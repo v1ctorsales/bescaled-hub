@@ -1,26 +1,49 @@
+import { useState } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Header from "../components/Header";
 import StatusBadge from "../components/StatusBadge";
-import { mockCompanies } from "../data/mockCompanies";
-import { exportCompaniesCsv, exportCompaniesPdf } from "../utils/adminExport";
+import IconToggleButton from "../components/IconToggleButton";
+import SettingsIcon from "../components/icons/SettingsIcon";
+import CompanySettingsModal from "../components/CompanySettingsModal";
+import AddCompanyModal from "../components/AddCompanyModal";
+import {
+  mockCompanies,
+  updateCompanySettings,
+  addCompany,
+  deleteCompany,
+} from "../data/mockCompanies";
+import { exportCompaniesXlsx, exportCompaniesPdf } from "../utils/adminExport";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const [companies, setCompanies] = useState(mockCompanies);
+  const [settingsCompanyId, setSettingsCompanyId] = useState(null);
+  const [addOpen, setAddOpen] = useState(false);
 
   if (!user) return <Navigate to="/login" replace />;
 
-  const totalSubscribed = mockCompanies.filter((c) => c.subscribed).length;
-  const totalReadiness = mockCompanies.filter(
-    (c) => c.filledReadinessForm,
-  ).length;
-  const totalMaturity = mockCompanies.filter(
-    (c) => c.filledMaturityTest,
-  ).length;
+  const totalSubscribed = companies.filter((c) => c.subscribed).length;
+  const totalReadiness = companies.filter((c) => c.filledReadinessForm).length;
+  const totalMaturity = companies.filter((c) => c.filledMaturityTest).length;
+
+  const settingsCompany = companies.find((c) => c.id === settingsCompanyId) || null;
+
+  function handleAddCompany(details) {
+    addCompany(details);
+    setCompanies([...mockCompanies]);
+    setAddOpen(false);
+  }
+
+  function handleDeleteCompany(companyId) {
+    deleteCompany(companyId);
+    setCompanies([...mockCompanies]);
+    setSettingsCompanyId(null);
+  }
 
   return (
     <div className="page">
-      <Header title="BeScaled Hub  (admin)" />
+      <Header subtitle="Admin" />
       <main className="page__content">
         <section className="summary-cards">
           <div className="summary-card">
@@ -45,17 +68,14 @@ export default function AdminDashboard() {
           <div className="panel__header">
             <h2>Companies</h2>
             <div className="panel__actions">
-              <button
-                className="btn-secondary"
-                onClick={() => exportCompaniesCsv(mockCompanies)}
-              >
-                Export CSV
+              <button className="btn-secondary" onClick={() => exportCompaniesXlsx(companies)}>
+                Export XLSX
               </button>
-              <button
-                className="btn-primary"
-                onClick={() => exportCompaniesPdf(mockCompanies)}
-              >
+              <button className="btn-secondary" onClick={() => exportCompaniesPdf(companies)}>
                 Export PDF
+              </button>
+              <button className="btn-primary" onClick={() => setAddOpen(true)}>
+                + Add company
               </button>
             </div>
           </div>
@@ -71,7 +91,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {mockCompanies.map((c) => (
+                {companies.map((c) => (
                   <tr key={c.id}>
                     <td>{c.name}</td>
                     <td>
@@ -81,12 +101,19 @@ export default function AdminDashboard() {
                       <StatusBadge filled={c.filledMaturityTest} />
                     </td>
                     <td>
-                      <Link
-                        className="btn-link"
-                        to={`/admin/companies/${c.id}`}
-                      >
-                        View details
-                      </Link>
+                      <div className="company-table__actions">
+                        <Link
+                          className="btn-link"
+                          to={`/admin/companies/${c.id}`}
+                        >
+                          View details
+                        </Link>
+                        <IconToggleButton
+                          icon={<SettingsIcon />}
+                          tooltip="Company settings"
+                          onClick={() => setSettingsCompanyId(c.id)}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -95,6 +122,17 @@ export default function AdminDashboard() {
           </div>
         </section>
       </main>
+
+      {settingsCompany && (
+        <CompanySettingsModal
+          company={settingsCompany}
+          onClose={() => setSettingsCompanyId(null)}
+          onSave={(settings) => updateCompanySettings(settingsCompany.id, settings)}
+          onDelete={() => handleDeleteCompany(settingsCompany.id)}
+        />
+      )}
+
+      {addOpen && <AddCompanyModal onClose={() => setAddOpen(false)} onAdd={handleAddCompany} />}
     </div>
   );
 }
