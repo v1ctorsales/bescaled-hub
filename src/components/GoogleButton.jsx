@@ -1,6 +1,6 @@
-export default function GoogleButton({ onClick, loading }) {
+export default function GoogleButton({ onClick, loading, disabled }) {
   return (
-    <button className="google-btn" onClick={onClick} disabled={loading}>
+    <button className="google-btn" onClick={onClick} disabled={loading || disabled}>
       <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
         <path
           fill="#FFC107"

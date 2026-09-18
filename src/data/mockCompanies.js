@@ -1,5 +1,6 @@
 import { maturityDimensions, MATURITY_STAGES } from "./maturityDimensions";
-import { READINESS_METRICS, READINESS_YEARS } from "../config";
+import { READINESS_METRICS, READINESS_YEARS, READINESS_SCALE_MIN } from "../config";
+import { getStageForLevel } from "./readinessLevelGuide";
 
 // ---------------------------------------------------------------------------
 // MOCK DATA — in-memory only, resets on page reload.
@@ -35,6 +36,25 @@ const LOW_PROFILE = [2, 1, 1, 0, 0];
 const MID_PROFILE = [3, 2, 2, 1, 1];
 const HIGH_PROFILE = [4, 4, 3, 3, 2];
 
+// `guideProgress` mirrors the self-assessment a company marks on the level
+// guide's bullet points (ReadinessLevelPage), keyed by "metric:level:
+// bulletIndex" -> "achieved" | "not-achieved" | "not-applicable". As mock
+// seed data, it's derived from each company's current-year readiness score:
+// every bullet at or below that level is marked achieved.
+function buildGuideProgress(levelsForCurrentYear) {
+  const progress = {};
+  READINESS_METRICS.forEach((metric) => {
+    const achievedUpTo = levelsForCurrentYear?.[metric] ?? 0;
+    for (let level = READINESS_SCALE_MIN; level <= achievedUpTo; level += 1) {
+      const bullets = getStageForLevel(metric, level)?.bullets ?? [];
+      bullets.forEach((_, index) => {
+        progress[`${metric}:${level}:${index}`] = "achieved";
+      });
+    }
+  });
+  return progress;
+}
+
 export const mockCompanies = [
   {
     id: 1,
@@ -44,9 +64,9 @@ export const mockCompanies = [
     filledReadinessForm: true,
     filledMaturityTest: true,
     readinessLevels: {
-      2026: { CRL: 2, TRL: 4, BRL: 2, IPRL: 2, TmRL: 1, FRL: 2 },
-      2027: { CRL: 3, TRL: 5, BRL: 3, IPRL: 3, TmRL: 2, FRL: 3 },
-      2028: { CRL: 4, TRL: 6, BRL: 4, IPRL: 4, TmRL: 3, FRL: 4 },
+      "09/2026": { CRL: 2, TRL: 4, BRL: 2, IPRL: 2, TmRL: 1, FRL: 2 },
+      "02/2027": { CRL: 3, TRL: 5, BRL: 3, IPRL: 3, TmRL: 2, FRL: 3 },
+      "09/2027": { CRL: 4, TRL: 6, BRL: 4, IPRL: 4, TmRL: 3, FRL: 4 },
     },
     maturityAnswers: buildMaturityAnswers(
       Array(maturityDimensions.length).fill(LOW_PROFILE),
@@ -68,9 +88,9 @@ export const mockCompanies = [
     filledReadinessForm: true,
     filledMaturityTest: false,
     readinessLevels: {
-      2026: { CRL: 1, TRL: 2, BRL: 1, IPRL: 1, TmRL: 2, FRL: 1 },
-      2027: { CRL: 2, TRL: 3, BRL: 2, IPRL: 2, TmRL: 3, FRL: 2 },
-      2028: { CRL: 3, TRL: 4, BRL: 3, IPRL: 3, TmRL: 4, FRL: 3 },
+      "09/2026": { CRL: 1, TRL: 2, BRL: 1, IPRL: 1, TmRL: 2, FRL: 1 },
+      "02/2027": { CRL: 2, TRL: 3, BRL: 2, IPRL: 2, TmRL: 3, FRL: 2 },
+      "09/2027": { CRL: 3, TRL: 4, BRL: 3, IPRL: 3, TmRL: 4, FRL: 3 },
     },
     maturityAnswers: {},
   },
@@ -82,9 +102,9 @@ export const mockCompanies = [
     filledReadinessForm: false,
     filledMaturityTest: false,
     readinessLevels: {
-      2026: { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
-      2027: { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
-      2028: { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
+      "09/2026": { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
+      "02/2027": { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
+      "09/2027": { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
     },
     maturityAnswers: {},
   },
@@ -96,9 +116,9 @@ export const mockCompanies = [
     filledReadinessForm: true,
     filledMaturityTest: true,
     readinessLevels: {
-      2026: { CRL: 5, TRL: 6, BRL: 4, IPRL: 3, TmRL: 5, FRL: 4 },
-      2027: { CRL: 6, TRL: 7, BRL: 5, IPRL: 4, TmRL: 6, FRL: 5 },
-      2028: { CRL: 7, TRL: 8, BRL: 6, IPRL: 5, TmRL: 7, FRL: 6 },
+      "09/2026": { CRL: 5, TRL: 6, BRL: 4, IPRL: 3, TmRL: 5, FRL: 4 },
+      "02/2027": { CRL: 6, TRL: 7, BRL: 5, IPRL: 4, TmRL: 6, FRL: 5 },
+      "09/2027": { CRL: 7, TRL: 8, BRL: 6, IPRL: 5, TmRL: 7, FRL: 6 },
     },
     maturityAnswers: buildMaturityAnswers(
       Array(maturityDimensions.length).fill(HIGH_PROFILE),
@@ -120,9 +140,9 @@ export const mockCompanies = [
     filledReadinessForm: true,
     filledMaturityTest: true,
     readinessLevels: {
-      2026: { CRL: 3, TRL: 3, BRL: 3, IPRL: 3, TmRL: 3, FRL: 3 },
-      2027: { CRL: 3, TRL: 4, BRL: 4, IPRL: 3, TmRL: 4, FRL: 3 },
-      2028: { CRL: 4, TRL: 5, BRL: 4, IPRL: 4, TmRL: 5, FRL: 4 },
+      "09/2026": { CRL: 3, TRL: 3, BRL: 3, IPRL: 3, TmRL: 3, FRL: 3 },
+      "02/2027": { CRL: 3, TRL: 4, BRL: 4, IPRL: 3, TmRL: 4, FRL: 3 },
+      "09/2027": { CRL: 4, TRL: 5, BRL: 4, IPRL: 4, TmRL: 5, FRL: 4 },
     },
     maturityAnswers: buildMaturityAnswers(
       Array(maturityDimensions.length).fill(MID_PROFILE),
@@ -141,20 +161,27 @@ export const mockCompanies = [
     filledReadinessForm: false,
     filledMaturityTest: false,
     readinessLevels: {
-      2026: { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
-      2027: { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
-      2028: { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
+      "09/2026": { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
+      "02/2027": { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
+      "09/2027": { CRL: 0, TRL: 0, BRL: 0, IPRL: 0, TmRL: 0, FRL: 0 },
     },
     maturityAnswers: {},
   },
 ];
 
-// Admin-editable settings (login emails + internal notes), edited via the
+// Admin-editable settings (login emails, description, batch), edited via the
 // CompanySettingsModal. Kept separate from the seed data above so every
 // company gets a sane default (its primary contact email as the first
 // login email) without repeating it by hand for each entry.
 mockCompanies.forEach((company) => {
-  company.settings = { loginEmails: [company.contactEmail], notes: "" };
+  company.settings = {
+    loginEmails: [company.contactEmail],
+    description: "",
+    batch: 1,
+  };
+  company.guideProgress = company.filledReadinessForm
+    ? buildGuideProgress(company.readinessLevels[READINESS_YEARS[0]])
+    : {};
 });
 
 // Writes go through this helper (rather than components mutating a company
@@ -184,7 +211,12 @@ export function addCompany({ name, contactEmail }) {
       {},
     ),
     maturityAnswers: {},
-    settings: { loginEmails: contactEmail ? [contactEmail] : [], notes: "" },
+    guideProgress: {},
+    settings: {
+      loginEmails: contactEmail ? [contactEmail] : [],
+      description: "",
+      batch: 1,
+    },
   };
 
   mockCompanies.push(company);

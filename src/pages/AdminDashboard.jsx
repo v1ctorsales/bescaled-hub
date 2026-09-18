@@ -27,7 +27,8 @@ export default function AdminDashboard() {
   const totalReadiness = companies.filter((c) => c.filledReadinessForm).length;
   const totalMaturity = companies.filter((c) => c.filledMaturityTest).length;
 
-  const settingsCompany = companies.find((c) => c.id === settingsCompanyId) || null;
+  const settingsCompany =
+    companies.find((c) => c.id === settingsCompanyId) || null;
 
   function handleAddCompany(details) {
     addCompany(details);
@@ -68,10 +69,16 @@ export default function AdminDashboard() {
           <div className="panel__header">
             <h2>Companies</h2>
             <div className="panel__actions">
-              <button className="btn-secondary" onClick={() => exportCompaniesXlsx(companies)}>
+              <button
+                className="btn-secondary"
+                onClick={() => exportCompaniesXlsx(companies)}
+              >
                 Export XLSX
               </button>
-              <button className="btn-secondary" onClick={() => exportCompaniesPdf(companies)}>
+              <button
+                className="btn-secondary"
+                onClick={() => exportCompaniesPdf(companies)}
+              >
                 Export PDF
               </button>
               <button className="btn-primary" onClick={() => setAddOpen(true)}>
@@ -85,7 +92,8 @@ export default function AdminDashboard() {
               <thead>
                 <tr>
                   <th>Company</th>
-                  <th>Readiness Level</th>
+                  <th>Batch</th>
+                  <th>KTH - IRL</th>
                   <th>AI Maturity Test</th>
                   <th></th>
                 </tr>
@@ -94,6 +102,7 @@ export default function AdminDashboard() {
                 {companies.map((c) => (
                   <tr key={c.id}>
                     <td>{c.name}</td>
+                    <td>{c.settings.batch}</td>
                     <td>
                       <StatusBadge filled={c.filledReadinessForm} />
                     </td>
@@ -127,12 +136,19 @@ export default function AdminDashboard() {
         <CompanySettingsModal
           company={settingsCompany}
           onClose={() => setSettingsCompanyId(null)}
-          onSave={(settings) => updateCompanySettings(settingsCompany.id, settings)}
+          onSave={(settings) =>
+            updateCompanySettings(settingsCompany.id, settings)
+          }
           onDelete={() => handleDeleteCompany(settingsCompany.id)}
         />
       )}
 
-      {addOpen && <AddCompanyModal onClose={() => setAddOpen(false)} onAdd={handleAddCompany} />}
+      {addOpen && (
+        <AddCompanyModal
+          onClose={() => setAddOpen(false)}
+          onAdd={handleAddCompany}
+        />
+      )}
     </div>
   );
 }

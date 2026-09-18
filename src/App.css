@@ -180,7 +180,33 @@
 }
 .google-btn:disabled {
   opacity: 0.7;
-  cursor: default;
+  cursor: not-allowed;
+}
+
+.terms-checkbox {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.terms-checkbox input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+}
+
+.terms-checkbox .btn-link {
+  padding: 0;
+  font-size: 13px;
+  text-decoration: underline;
 }
 
 .admin-toggle {
@@ -321,6 +347,11 @@
   flex-shrink: 0;
 }
 
+.action-card__action .btn-primary {
+  min-width: 190px;
+  text-align: center;
+}
+
 /* ---------- Back link ---------- */
 .back-link {
   display: inline-flex;
@@ -334,6 +365,19 @@
 }
 .back-link:hover {
   color: var(--accent);
+}
+
+.page-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-toolbar__actions {
+  display: flex;
+  gap: 10px;
 }
 
 /* ---------- Panels ---------- */
@@ -432,6 +476,57 @@
   max-width: 720px;
 }
 
+.level-progress {
+  position: relative;
+  margin-top: 28px;
+}
+
+.level-progress__marker {
+  position: absolute;
+  top: -22px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: left 0.2s ease;
+}
+
+.level-progress__marker-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-h);
+  white-space: nowrap;
+}
+
+.level-progress__marker::after {
+  content: "";
+  width: 2px;
+  height: 8px;
+  background: var(--text-h);
+  margin-top: 2px;
+}
+
+.level-progress__track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.level-progress__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+
+.level-progress__caption {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
 .level-guide__stage {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -468,15 +563,128 @@
 
 .level-guide__stage ul {
   margin: 0;
-  padding-left: 18px;
-  font-size: 13px;
-  color: var(--text-h);
+  padding: 0;
+  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
-/* Thermometer: 0-9 horizontal level selector */
+.level-guide__bullet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-h);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.level-guide__bullet:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.level-guide__bullet-text {
+  flex: 1 1 320px;
+}
+
+.level-guide__bullet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.level-guide__bullet-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 999px;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.level-guide__bullet-btn:hover {
+  border-color: var(--text-h);
+}
+
+.level-guide__bullet-btn--achieved.is-active {
+  background: var(--success-bg);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.level-guide__bullet-btn--not-achieved.is-active {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.level-guide__bullet-btn--not-applicable.is-active {
+  background: var(--muted-bg);
+  border-color: var(--muted);
+  color: var(--muted);
+}
+
+.kth-bullets {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.kth-bullets__title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.kth-bullets .tabs {
+  margin-bottom: 4px;
+}
+
+.kth-bullets__stage {
+  padding: 14px 16px;
+}
+
+.kth-bullets__status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.kth-bullets__status--achieved {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.kth-bullets__status--not-achieved {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.kth-bullets__status--not-applicable {
+  background: var(--muted-bg);
+  color: var(--muted);
+}
+
+.kth-bullets__status--unmarked {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* Thermometer: 1-9 horizontal level selector */
 .thermometer {
   display: flex;
   gap: 4px;
@@ -516,6 +724,10 @@
   opacity: 1;
   border-color: var(--text-h);
   transform: scaleY(1.15);
+}
+
+.thermometer.is-read-only .thermometer__step {
+  cursor: default;
 }
 
 /* ---------- Tables ---------- */
@@ -1069,7 +1281,8 @@
 }
 
 .company-settings__field input,
-.company-settings__field textarea {
+.company-settings__field textarea,
+.company-settings__field select {
   width: 100%;
   padding: 9px 12px;
   border: 1px solid var(--border);
@@ -1078,6 +1291,16 @@
   color: var(--text-h);
   font-family: var(--sans);
   font-size: 14px;
+}
+
+.company-settings__field select {
+  cursor: pointer;
+}
+
+.company-settings__field-error {
+  font-size: 12px;
+  color: var(--danger);
+  margin: 0;
 }
 
 .company-settings__field input:disabled {

@@ -1,15 +1,9 @@
 // ---------------------------------------------------------------------------
 // KTH Innovation Readiness Level (KTH IRL) — reference content shown in the
-// level guide below the readiness table/chart. Source: KTH IRL model
-// (Central Baltic Programme / BeScaled materials). Level 0 is our own
-// "not started yet" placeholder so the guide still covers the full 0-9
-// thermometer used in the UI.
+// level guide above the readiness table/chart. Source: KTH IRL model
+// (Central Baltic Programme / BeScaled materials). Levels run 1-9, matching
+// the thermometer scale used in the UI.
 // ---------------------------------------------------------------------------
-
-const NOT_STARTED = {
-  title: "Not started yet",
-  bullets: ["No work has begun on this dimension yet."],
-};
 
 export const READINESS_LEVEL_GUIDE = {
   CRL: {
@@ -528,6 +522,19 @@ export const READINESS_LEVEL_GUIDE = {
 };
 
 export function getStageForLevel(metric, level) {
-  if (level <= 0) return NOT_STARTED;
-  return READINESS_LEVEL_GUIDE[metric]?.stages?.[level] ?? NOT_STARTED;
+  return READINESS_LEVEL_GUIDE[metric]?.stages?.[level];
 }
+
+// Shared with the level guide's self-assessment buttons (ReadinessLevelPage)
+// and the admin's read-only view of a company's marked bullets
+// (CompanyDetailPage), so both refer to the same status ids/labels.
+export const BULLET_STATUSES = [
+  { id: "achieved", label: "Achieved" },
+  { id: "not-achieved", label: "Not achieved" },
+  { id: "not-applicable", label: "Not applicable" },
+];
+
+export const BULLET_STATUS_LABELS = BULLET_STATUSES.reduce(
+  (labels, status) => ({ ...labels, [status.id]: status.label }),
+  {},
+);

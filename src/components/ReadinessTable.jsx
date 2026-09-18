@@ -1,6 +1,7 @@
 import {
   READINESS_METRICS,
   READINESS_METRIC_LABELS,
+  READINESS_SCALE_MIN,
   READINESS_SCALE_MAX,
 } from "../config";
 
@@ -29,18 +30,18 @@ export default function ReadinessTable({ readinessLevels, years, onChange, edita
                   {editable ? (
                     <input
                       type="number"
-                      min={0}
+                      min={READINESS_SCALE_MIN}
                       max={READINESS_SCALE_MAX}
-                      value={readinessLevels?.[year]?.[metric] ?? 0}
+                      value={readinessLevels?.[year]?.[metric] ?? READINESS_SCALE_MIN}
                       onChange={(e) => {
                         let value = Number(e.target.value);
-                        if (Number.isNaN(value)) value = 0;
-                        value = Math.max(0, Math.min(READINESS_SCALE_MAX, value));
+                        if (Number.isNaN(value)) value = READINESS_SCALE_MIN;
+                        value = Math.max(READINESS_SCALE_MIN, Math.min(READINESS_SCALE_MAX, value));
                         onChange(year, metric, value);
                       }}
                     />
                   ) : (
-                    <span>{readinessLevels?.[year]?.[metric] ?? 0}</span>
+                    <span>{readinessLevels?.[year]?.[metric] ?? READINESS_SCALE_MIN}</span>
                   )}
                 </td>
               ))}

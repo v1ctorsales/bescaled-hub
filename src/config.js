@@ -26,7 +26,8 @@ export const READINESS_METRIC_LABELS = {
   FRL: "Funding Readiness Level",
 };
 
-export const READINESS_YEARS = [2026, 2027, 2028];
+export const READINESS_YEARS = ["09/2026", "02/2027", "09/2027"];
 
 // Matches the KTH Innovation Readiness Level model (1-9 scale per metric).
+export const READINESS_SCALE_MIN = 1;
 export const READINESS_SCALE_MAX = 9;

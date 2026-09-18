@@ -8,6 +8,7 @@ import IconToggleButton from "../components/IconToggleButton";
 import CommentIcon from "../components/icons/CommentIcon";
 import HelpIcon from "../components/icons/HelpIcon";
 import { maturityDimensions, MATURITY_STAGES, TOTAL_MATURITY_ITEMS } from "../data/maturityDimensions";
+import { exportMaturityXlsx, exportMaturityPdf } from "../utils/export";
 
 // Comment boxes start open only where a comment already exists (review
 // mode) — most stages get just a score, so the box stays tucked away
@@ -27,6 +28,7 @@ function keysWithComments(answers) {
 export default function MaturityTestPage() {
   const { user } = useAuth();
   const {
+    companyName,
     maturityTestFilled,
     maturityAnswers,
     maturityTouched,
@@ -38,6 +40,14 @@ export default function MaturityTestPage() {
   const [openComments, setOpenComments] = useState(() => keysWithComments(maturityAnswers));
 
   if (!user) return <Navigate to="/login" replace />;
+
+  function handleExportXlsx() {
+    exportMaturityXlsx(companyName, maturityAnswers);
+  }
+
+  function handleExportPdf() {
+    exportMaturityPdf(companyName, maturityAnswers);
+  }
 
   function toggleExpanded(dimensionId) {
     setExpanded((prev) => {
@@ -67,9 +77,19 @@ export default function MaturityTestPage() {
     <div className="page">
       <Header />
       <main className="page__content">
-        <Link to="/dashboard" className="back-link">
-          ← Back to dashboard
-        </Link>
+        <div className="page-toolbar">
+          <Link to="/dashboard" className="back-link">
+            ← Back to dashboard
+          </Link>
+          <div className="page-toolbar__actions">
+            <button className="btn-secondary" onClick={handleExportXlsx}>
+              Export XLSX
+            </button>
+            <button className="btn-primary" onClick={handleExportPdf}>
+              Export PDF
+            </button>
+          </div>
+        </div>
 
         <section className="panel">
           <div className="panel__header">

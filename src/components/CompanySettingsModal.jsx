@@ -2,14 +2,17 @@ import { useState } from "react";
 import Modal from "./Modal";
 
 const MAX_LOGIN_EMAILS = 3;
+const BATCH_OPTIONS = Array.from({ length: 9 }, (_, i) => i + 1);
 
 // TODO(backend): `onSave`/`onDelete` write straight into the shared
 // mockCompanies record since there's no API yet — replace with real
 // PATCH/DELETE /companies/:id calls once a backend exists.
 export default function CompanySettingsModal({ company, onClose, onSave, onDelete }) {
   const [loginEmails, setLoginEmails] = useState(company.settings.loginEmails);
-  const [notes, setNotes] = useState(company.settings.notes);
+  const [description, setDescription] = useState(company.settings.description);
+  const [batch, setBatch] = useState(company.settings.batch || 1);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [showDescriptionError, setShowDescriptionError] = useState(false);
 
   function updateEmail(index, value) {
     setLoginEmails((prev) => prev.map((email, i) => (i === index ? value : email)));
@@ -25,9 +28,14 @@ export default function CompanySettingsModal({ company, onClose, onSave, onDelet
   }
 
   function handleSave() {
+    if (!description.trim()) {
+      setShowDescriptionError(true);
+      return;
+    }
     onSave({
       loginEmails: loginEmails.map((e) => e.trim()).filter(Boolean),
-      notes,
+      description,
+      batch,
     });
     onClose();
   }
@@ -72,12 +80,29 @@ export default function CompanySettingsModal({ company, onClose, onSave, onDelet
         </div>
 
         <div className="company-settings__field">
-          <label>Notes (optional)</label>
+          <label>Description *</label>
           <textarea
-            value={notes}
-            placeholder="Internal notes about this company..."
-            onChange={(e) => setNotes(e.target.value)}
+            value={description}
+            placeholder="Internal description of this company..."
+            onChange={(e) => {
+              setDescription(e.target.value);
+              if (showDescriptionError) setShowDescriptionError(false);
+            }}
           />
+          {showDescriptionError && (
+            <p className="company-settings__field-error">Description is required.</p>
+          )}
+        </div>
+
+        <div className="company-settings__field">
+          <label>Batch</label>
+          <select value={batch} onChange={(e) => setBatch(Number(e.target.value))}>
+            {BATCH_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </div>
 
         {confirmingDelete && (

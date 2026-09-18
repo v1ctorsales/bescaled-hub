@@ -3,7 +3,7 @@ import { READINESS_METRICS, READINESS_SCALE_MAX } from "../config";
 // Matches the colors used by src/components/RadarChartView.jsx (recharts),
 // redrawn here with plain Canvas 2D so it can be rasterized into a PNG for
 // PDF export without needing to screenshot the live chart.
-const YEAR_COLORS = ["#2E5CFF", "#00B37E", "#FF8A00"];
+const YEAR_COLORS = ["#2E5CFF", "#FF8A00", "#8B5E34"];
 
 export function renderRadarChartImage(readinessLevels, years, { size = 480 } = {}) {
   const canvas = document.createElement("canvas");

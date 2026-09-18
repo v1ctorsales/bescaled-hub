@@ -28,6 +28,11 @@ export function CompanyDataProvider({ children }) {
   const [maturityTouched, setMaturityTouched] = useState(() =>
     MY_COMPANY.filledMaturityTest ? allMaturityKeys() : new Set(),
   );
+  // Self-assessment status ("achieved" | "not-achieved" | "not-applicable")
+  // for each level-guide bullet, keyed by "metric:level:bulletIndex". This is
+  // purely a reference aid for browsing the guide — it never changes the
+  // official readiness score in `readinessLevels`.
+  const [guideProgress, setGuideProgress] = useState(MY_COMPANY.guideProgress);
 
   function updateReadiness(year, metric, value) {
     setReadinessLevels((prev) => ({
@@ -35,6 +40,14 @@ export function CompanyDataProvider({ children }) {
       [year]: { ...prev[year], [metric]: value },
     }));
     setReadinessFormFilled(true);
+  }
+
+  function updateGuideProgress(metric, level, bulletIndex, status) {
+    const key = `${metric}:${level}:${bulletIndex}`;
+    setGuideProgress((prev) => ({
+      ...prev,
+      [key]: prev[key] === status ? undefined : status,
+    }));
   }
 
   function updateMaturityAnswer(dimensionId, stageId, patch) {
@@ -59,6 +72,8 @@ export function CompanyDataProvider({ children }) {
         readinessLevels,
         readinessFormFilled,
         updateReadiness,
+        guideProgress,
+        updateGuideProgress,
         maturityTestFilled,
         maturityAnswers,
         maturityTouched,

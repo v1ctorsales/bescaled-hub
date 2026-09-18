@@ -1,12 +1,16 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { downloadXlsx } from "./export";
+import { downloadXlsx, downloadXlsxSheets } from "./export";
 import { renderRadarChartImage } from "./radarCanvas";
-import { READINESS_METRICS, READINESS_YEARS } from "../config";
+import { READINESS_METRICS, READINESS_METRIC_LABELS, READINESS_YEARS } from "../config";
 import {
   maturityDimensions,
   MATURITY_STAGES,
 } from "../data/maturityDimensions";
+import {
+  READINESS_LEVEL_GUIDE,
+  BULLET_STATUS_LABELS,
+} from "../data/readinessLevelGuide";
 
 // ---------------------------------------------------------------------------
 // Admin exports: an XLSX spreadsheet, and a PDF report that embeds each
@@ -82,46 +86,70 @@ export function exportCompaniesPdf(companies) {
   doc.save("bescalehub_companies.pdf");
 }
 
+// Every bullet across every metric/level, with its self-assessment status —
+// "Not marked" when the company hasn't answered it yet — so the report
+// reflects the full checklist, not just what's been filled in.
+function getGuideRows(company) {
+  const rows = [];
+  READINESS_METRICS.forEach((metric) => {
+    const guide = READINESS_LEVEL_GUIDE[metric];
+    Object.keys(guide.stages)
+      .map(Number)
+      .sort((a, b) => a - b)
+      .forEach((level) => {
+        (guide.stages[level].bullets ?? []).forEach((bullet, index) => {
+          const status = company.guideProgress?.[`${metric}:${level}:${index}`];
+          rows.push({
+            metric: READINESS_METRIC_LABELS[metric],
+            level,
+            bullet,
+            status: status ? BULLET_STATUS_LABELS[status] : "Not marked",
+          });
+        });
+      });
+  });
+  return rows;
+}
+
 export function exportCompanyXlsx(company) {
-  const rows = [
-    { section: "info", key: "name", value: company.name },
-    { section: "info", key: "contactEmail", value: company.contactEmail },
-    { section: "info", key: "subscribed", value: company.subscribed },
+  const sheets = [
+    {
+      name: "Info",
+      rows: [
+        { field: "Name", value: company.name },
+        { field: "Contact email", value: company.contactEmail },
+        { field: "Subscribed", value: company.subscribed },
+      ],
+    },
   ];
 
-  READINESS_YEARS.forEach((year) => {
-    READINESS_METRICS.forEach((metric) => {
-      rows.push({
-        section: `readiness_${year}`,
-        key: metric,
-        value: company.readinessLevels?.[year]?.[metric] ?? 0,
-      });
+  const readinessRows = READINESS_METRICS.map((metric) => {
+    const row = { metric: READINESS_METRIC_LABELS[metric] };
+    READINESS_YEARS.forEach((year) => {
+      row[year] = company.readinessLevels?.[year]?.[metric] ?? 0;
     });
+    return row;
   });
+  sheets.push({ name: "KTH", rows: readinessRows });
 
+  sheets.push({ name: "KTH Level Guide", rows: getGuideRows(company) });
+
+  const maturityRows = [];
   maturityDimensions.forEach((dimension) => {
     MATURITY_STAGES.forEach((stage) => {
       const answer = company.maturityAnswers?.[dimension.id]?.[stage.id];
-      const key = `${dimension.title} — ${stage.label}`;
-      rows.push({
-        section: "maturity",
-        key,
-        value: answer ? `${answer.score} / 4` : "Not answered",
+      maturityRows.push({
+        dimension: dimension.title,
+        stage: stage.label,
+        score: answer ? answer.score : "Not answered",
+        comment: answer?.comment || "",
+        flagged: answer?.dontUnderstand ? "Yes" : "No",
       });
-      if (answer?.comment) {
-        rows.push({ section: "maturity_comment", key, value: answer.comment });
-      }
-      if (answer?.dontUnderstand) {
-        rows.push({
-          section: "maturity_flag",
-          key,
-          value: "Flagged as unclear",
-        });
-      }
     });
   });
+  sheets.push({ name: "AI Maturity", rows: maturityRows });
 
-  downloadXlsx(rows, `${company.name.replace(/\s+/g, "_")}.xlsx`, "Company");
+  downloadXlsxSheets(sheets, `${company.name.replace(/\s+/g, "_")}.xlsx`);
 }
 
 export function exportCompanyPdf(company) {
@@ -175,10 +203,36 @@ export function exportCompanyPdf(company) {
     y += 16;
   }
 
-  if (y > pageHeight - 40) {
-    doc.addPage();
-    y = margin;
+  doc.addPage();
+  y = margin;
+
+  doc.setFontSize(12);
+  doc.text("KTH Level Guide", margin, y);
+  y += 4;
+
+  const guideRows = getGuideRows(company);
+  if (guideRows.length) {
+    autoTable(doc, {
+      startY: y,
+      margin: { left: margin, right: margin },
+      head: [["Metric", "Level", "Requirement", "Status"]],
+      body: guideRows.map((row) => [row.metric, row.level, row.bullet, row.status]),
+      theme: "grid",
+      styles: { fontSize: 7 },
+      columnStyles: {
+        0: { cellWidth: 28 },
+        1: { cellWidth: 14 },
+        2: { cellWidth: 105 },
+        3: { cellWidth: 25 },
+      },
+    });
+  } else {
+    doc.setFontSize(10);
+    doc.text("No level guide progress submitted.", margin, y + 4);
   }
+
+  doc.addPage();
+  y = margin;
 
   doc.setFontSize(12);
   doc.text("AI Maturity Test", margin, y);

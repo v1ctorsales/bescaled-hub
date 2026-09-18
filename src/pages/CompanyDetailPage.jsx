@@ -7,6 +7,7 @@ import StatusBadge from "../components/StatusBadge";
 import ScoreDots from "../components/ScoreDots";
 import ReadinessTable from "../components/ReadinessTable";
 import RadarChartView from "../components/RadarChartView";
+import Thermometer from "../components/Thermometer";
 import IconToggleButton from "../components/IconToggleButton";
 import SettingsIcon from "../components/icons/SettingsIcon";
 import CompanySettingsModal from "../components/CompanySettingsModal";
@@ -19,20 +20,57 @@ import {
   maturityDimensions,
   MATURITY_STAGES,
 } from "../data/maturityDimensions";
-import { READINESS_YEARS } from "../config";
+import {
+  READINESS_YEARS,
+  READINESS_METRICS,
+  READINESS_METRIC_LABELS,
+  READINESS_SCALE_MIN,
+} from "../config";
+import {
+  READINESS_LEVEL_GUIDE,
+  BULLET_STATUS_LABELS,
+} from "../data/readinessLevelGuide";
 import { exportCompanyXlsx, exportCompanyPdf } from "../utils/adminExport";
+
+const CURRENT_YEAR = READINESS_YEARS[0];
+
+// The KTH level guide is 1-indexed per metric (levels 1-9); this walks every
+// level in order and returns every bullet, marked or not, so the admin sees
+// the full checklist rather than only what the company has already marked.
+function getGuideEntries(metric, guideProgress) {
+  const guide = READINESS_LEVEL_GUIDE[metric];
+  return Object.keys(guide.stages)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .map((level) => {
+      const bullets = guide.stages[level].bullets ?? [];
+      return {
+        level,
+        title: guide.stages[level].title,
+        bullets: bullets.map((bullet, index) => ({
+          bullet,
+          status: guideProgress?.[`${metric}:${level}:${index}`],
+        })),
+      };
+    });
+}
 
 export default function CompanyDetailPage() {
   const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("readiness");
+  const [guideMetric, setGuideMetric] = useState(READINESS_METRICS[0]);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   if (!user) return <Navigate to="/login" replace />;
 
   const company = mockCompanies.find((c) => c.id === Number(id));
   if (!company) return <Navigate to="/admin" replace />;
+
+  const guideEntries = getGuideEntries(guideMetric, company.guideProgress);
+  const companyGuideLevel =
+    company.readinessLevels?.[CURRENT_YEAR]?.[guideMetric] ?? READINESS_SCALE_MIN;
 
   function handleDelete() {
     deleteCompany(company.id);
@@ -117,6 +155,51 @@ export default function CompanyDetailPage() {
                   yet.
                 </p>
               )}
+
+              <div className="kth-bullets">
+                <h3 className="kth-bullets__title">KTH level guide</h3>
+                <Tabs
+                  tabs={READINESS_METRICS.map((metric) => ({
+                    id: metric,
+                    label: READINESS_METRIC_LABELS[metric],
+                  }))}
+                  activeTab={guideMetric}
+                  onChange={setGuideMetric}
+                />
+
+                <div className="level-progress">
+                  <div
+                    className="level-progress__marker"
+                    style={{ left: `${((companyGuideLevel - 0.5) / 9) * 100}%` }}
+                  >
+                    <span className="level-progress__marker-label">
+                      {company.name} is here
+                    </span>
+                  </div>
+                  <Thermometer value={companyGuideLevel} readOnly />
+                </div>
+
+                {guideEntries.map(({ level, title, bullets }) => (
+                  <div key={level} className="level-guide__stage kth-bullets__stage">
+                    <div className="level-guide__stage-header">
+                      <span className="level-guide__level-badge">Level {level}</span>
+                      <h4>{title}</h4>
+                    </div>
+                    <ul>
+                      {bullets.map(({ bullet, status }) => (
+                        <li key={bullet} className="level-guide__bullet">
+                          <span className="level-guide__bullet-text">{bullet}</span>
+                          <span
+                            className={`kth-bullets__status kth-bullets__status--${status || "unmarked"}`}
+                          >
+                            {status ? BULLET_STATUS_LABELS[status] : "Not marked"}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
