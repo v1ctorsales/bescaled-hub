@@ -1411,6 +1411,10 @@
   color: var(--text-h);
 }
 
+.tabs__required-asterisk {
+  color: var(--danger);
+}
+
 .tab-panel {
   display: flex;
   flex-direction: column;

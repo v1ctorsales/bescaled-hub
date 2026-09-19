@@ -3,15 +3,18 @@ export default function LevelCompletionBar({ percent, completed, total }) {
 
   return (
     <div className="level-progress">
-      <div className="level-progress__marker" style={{ left: `${markerPosition}%` }}>
+      <div
+        className="level-progress__marker"
+        style={{ left: `${markerPosition}%` }}
+      >
         <span className="level-progress__marker-label">You are here</span>
       </div>
       <div className="level-progress__track">
-        <div className="level-progress__fill" style={{ width: `${percent}%` }} />
+        <div
+          className="level-progress__fill"
+          style={{ width: `${percent}%` }}
+        />
       </div>
-      <p className="level-progress__caption">
-        {completed}/{total} levels fully marked · {percent}% complete
-      </p>
     </div>
   );
 }

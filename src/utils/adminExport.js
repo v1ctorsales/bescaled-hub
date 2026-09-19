@@ -196,11 +196,9 @@ export function exportCompanyPdf(company) {
       READINESS_YEARS,
     );
     doc.addImage(imgData, "PNG", margin, y, 90, 90);
-    y += 98;
   } else {
     doc.setFontSize(10);
     doc.text("No Readiness Level data submitted.", margin, y + 4);
-    y += 16;
   }
 
   doc.addPage();

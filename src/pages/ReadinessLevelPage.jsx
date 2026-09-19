@@ -26,6 +26,10 @@ import {
 
 const CURRENT_YEAR = READINESS_YEARS[0];
 
+function hasMarkedBullets(metric, progress) {
+  return Object.keys(progress).some((key) => key.startsWith(`${metric}:`) && progress[key]);
+}
+
 function isLevelComplete(metric, level, progress) {
   const bullets = getStageForLevel(metric, level)?.bullets ?? [];
   return bullets.every((_, index) => {
@@ -135,7 +139,14 @@ export default function ReadinessLevelPage() {
           <Tabs
             tabs={READINESS_METRICS.map((metric) => ({
               id: metric,
-              label: READINESS_METRIC_LABELS[metric],
+              label: (
+                <>
+                  {READINESS_METRIC_LABELS[metric]}
+                  {!hasMarkedBullets(metric, guideProgress) && (
+                    <span className="tabs__required-asterisk"> *</span>
+                  )}
+                </>
+              ),
             }))}
             activeTab={guideMetric}
             onChange={handleMetricChange}
