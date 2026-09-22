@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
-import { Navigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { useCompanyData } from "../context/CompanyDataContext";
 import Header from "../components/Header";
 import ReadinessTable from "../components/ReadinessTable";
@@ -23,34 +22,30 @@ import {
   getStageForLevel,
   BULLET_STATUSES,
 } from "../data/readinessLevelGuide";
+import { levelOrMin } from "../utils/readinessLevel";
+import {
+  isLevelAchieved,
+  isLevelCleared,
+  isLevelComplete,
+} from "../utils/readinessProgress";
 
 const CURRENT_YEAR = READINESS_YEARS[0];
 
-function hasMarkedBullets(metric, progress) {
-  return Object.keys(progress).some(
-    (key) => key.startsWith(`${metric}:`) && progress[key],
-  );
-}
-
-function isLevelComplete(metric, level, progress) {
-  const bullets = getStageForLevel(metric, level)?.bullets ?? [];
-  return bullets.every((_, index) => {
-    const status = progress[`${metric}:${level}:${index}`];
-    return status === "achieved" || status === "not-applicable";
-  });
-}
+// Pause before the guide moves on by itself, so the user sees the item they
+// just marked.
+const AUTO_ADVANCE_DELAY_MS = 300;
 
 // Overall progress through a metric's guide: the count advances by one level
-// for each level fully marked (every bullet Achieved or Not applicable),
-// counted as an unbroken streak starting at level 1 — a level completed out
-// of order (e.g. level 3 before level 2) doesn't count until every level
-// before it is also complete.
+// for each level cleared (every bullet Achieved or Not applicable — "Not
+// achieved" doesn't count), counted as an unbroken streak starting at
+// level 1 — a level cleared out of order (e.g. level 3 before level 2)
+// doesn't count until every level before it is also cleared.
 function getMetricProgress(metric, progress) {
   const totalLevels = READINESS_SCALE_MAX - READINESS_SCALE_MIN + 1;
   let completeLevelsCount = 0;
   while (
     completeLevelsCount < totalLevels &&
-    isLevelComplete(metric, READINESS_SCALE_MIN + completeLevelsCount, progress)
+    isLevelCleared(metric, READINESS_SCALE_MIN + completeLevelsCount, progress)
   ) {
     completeLevelsCount += 1;
   }
@@ -62,13 +57,17 @@ function getMetricProgress(metric, progress) {
 }
 
 export default function ReadinessLevelPage() {
-  const { user } = useAuth();
   const {
     companyName,
     readinessLevels,
     updateReadiness,
     guideProgress,
     updateGuideProgress,
+    readinessDirty,
+    readinessFormFilled,
+    savingReadiness,
+    saveError,
+    saveReadiness,
     loading,
   } = useCompanyData();
   const [guideMetric, setGuideMetric] = useState(READINESS_METRICS[0]);
@@ -87,7 +86,7 @@ export default function ReadinessLevelPage() {
     if (loading) return;
     function syncInitialGuideState() {
       setPreviewLevel(
-        readinessLevels?.[CURRENT_YEAR]?.[guideMetric] ?? READINESS_SCALE_MIN,
+        levelOrMin(readinessLevels?.[CURRENT_YEAR]?.[guideMetric]),
       );
       if (
         getMetricProgress(READINESS_METRICS[0], guideProgress).percent === 0
@@ -101,7 +100,20 @@ export default function ReadinessLevelPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
-  if (!user) return <Navigate to="/login" replace />;
+  // Pending auto-advance (see handleMarkBullet); never outlives the page.
+  const advanceTimer = useRef(null);
+  useEffect(() => () => clearTimeout(advanceTimer.current), []);
+
+  // Unsaved edits live only in memory — warn before a refresh/close loses them.
+  useEffect(() => {
+    if (!readinessDirty) return;
+    function warn(event) {
+      event.preventDefault();
+      event.returnValue = "";
+    }
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [readinessDirty]);
 
   if (loading) {
     return (
@@ -122,11 +134,55 @@ export default function ReadinessLevelPage() {
     exportReadinessPdf(companyName, readinessLevels);
   }
 
+  // Marks a bullet, then reacts to what that click completed:
+  // - every bullet of the level "achieved" → the official score for the current
+  //   period moves up to that level (only ever raised, never lowered; still
+  //   editable in the table);
+  // - the level went from unfinished to fully answered (any status) → the guide
+  //   moves on to the next level, or after level 9 to the next metric, after a
+  //   short pause so the marked item stays visible for a moment.
+  // Re-marking a bullet in a level that was already fully answered doesn't move on.
+  function handleMarkBullet(index, status) {
+    const key = `${guideMetric}:${previewLevel}:${index}`;
+    const nextStatus = guideProgress[key] === status ? undefined : status;
+    const nextProgress = { ...guideProgress, [key]: nextStatus };
+    updateGuideProgress(guideMetric, previewLevel, index, status);
+
+    const currentScore = readinessLevels?.[CURRENT_YEAR]?.[guideMetric] ?? 0;
+    if (
+      isLevelAchieved(guideMetric, previewLevel, nextProgress) &&
+      previewLevel > currentScore
+    ) {
+      updateReadiness(CURRENT_YEAR, guideMetric, previewLevel);
+    }
+
+    const justFinished =
+      !isLevelComplete(guideMetric, previewLevel, guideProgress) &&
+      isLevelComplete(guideMetric, previewLevel, nextProgress);
+    if (!justFinished) return;
+
+    const nextMetric =
+      READINESS_METRICS[READINESS_METRICS.indexOf(guideMetric) + 1];
+    const advance =
+      previewLevel < READINESS_SCALE_MAX
+        ? () => setPreviewLevel(previewLevel + 1)
+        : nextMetric && (() => handleMetricChange(nextMetric));
+    if (!advance) return;
+
+    clearTimeout(advanceTimer.current);
+    advanceTimer.current = setTimeout(advance, AUTO_ADVANCE_DELAY_MS);
+  }
+
+  // Picking a level or metric by hand cancels a pending auto-advance.
+  function handleLevelChange(level) {
+    clearTimeout(advanceTimer.current);
+    setPreviewLevel(level);
+  }
+
   function handleMetricChange(metric) {
+    clearTimeout(advanceTimer.current);
     setGuideMetric(metric);
-    setPreviewLevel(
-      readinessLevels?.[CURRENT_YEAR]?.[metric] ?? READINESS_SCALE_MIN,
-    );
+    setPreviewLevel(levelOrMin(readinessLevels?.[CURRENT_YEAR]?.[metric]));
   }
 
   const guide = READINESS_LEVEL_GUIDE[guideMetric];
@@ -171,8 +227,10 @@ export default function ReadinessLevelPage() {
           <p className="level-guide__hint">
             Pick a metric and step through the levels below to see what's
             expected at each stage, then mark which points you've already
-            achieved. This is just a reference — it won't change your official{" "}
-            {CURRENT_YEAR} score, which you set in the table below the chart.
+            achieved. When every point of a level is marked Achieved, your{" "}
+            {CURRENT_YEAR} score for that metric moves up to that level
+            automatically — you can still adjust it in the table below the
+            chart.
           </p>
 
           <Tabs
@@ -181,9 +239,11 @@ export default function ReadinessLevelPage() {
               label: (
                 <>
                   {READINESS_METRIC_LABELS[metric]}
-                  {!hasMarkedBullets(metric, guideProgress) && (
-                    <span className="tabs__required-asterisk"> *</span>
-                  )}
+                  {!isLevelComplete(
+                    metric,
+                    READINESS_SCALE_MIN,
+                    guideProgress,
+                  ) && <span className="tabs__required-asterisk"> *</span>}
                 </>
               ),
             }))}
@@ -195,7 +255,7 @@ export default function ReadinessLevelPage() {
             <h3 className="level-guide__title">{guide.label}</h3>
             <p className="level-guide__intro">{guide.intro}</p>
 
-            <Thermometer value={previewLevel} onChange={setPreviewLevel} />
+            <Thermometer value={previewLevel} onChange={handleLevelChange} />
 
             <LevelCompletionBar
               percent={completionPercent}
@@ -203,7 +263,11 @@ export default function ReadinessLevelPage() {
               total={totalLevels}
             />
 
-            <div className="level-guide__stage">
+            {/* Keyed by metric + level so every level change replays the entrance animation. */}
+            <div
+              key={`${guideMetric}:${previewLevel}`}
+              className="level-guide__stage"
+            >
               <div className="level-guide__stage-header">
                 <span className="level-guide__level-badge">
                   Level {previewLevel}
@@ -232,14 +296,7 @@ export default function ReadinessLevelPage() {
                               className={`level-guide__bullet-btn level-guide__bullet-btn--${option.id} ${
                                 status === option.id ? "is-active" : ""
                               }`}
-                              onClick={() =>
-                                updateGuideProgress(
-                                  guideMetric,
-                                  previewLevel,
-                                  index,
-                                  option.id,
-                                )
-                              }
+                              onClick={() => handleMarkBullet(index, option.id)}
                             >
                               {option.label}
                             </button>
@@ -275,6 +332,31 @@ export default function ReadinessLevelPage() {
             </div>
           </div>
         </section>
+
+        <div className="submit-block">
+          {saveError ? (
+            <p className="submit-block__status is-error" role="alert">
+              Couldn't submit your answers. Try again.
+            </p>
+          ) : readinessDirty ? (
+            <p className="submit-block__status">You have unsaved changes.</p>
+          ) : (
+            readinessFormFilled && (
+              <p className="submit-block__status">
+                ✓ All your answers are submitted.
+              </p>
+            )
+          )}
+          <button
+            className="btn-primary"
+            onClick={saveReadiness}
+            disabled={
+              savingReadiness || (!readinessDirty && readinessFormFilled)
+            }
+          >
+            {savingReadiness ? "Submitting…" : "Submit answers"}
+          </button>
+        </div>
       </main>
 
       {isGuideHelpOpen && (
@@ -287,9 +369,11 @@ export default function ReadinessLevelPage() {
             for the metric you've selected above.
           </p>
           <p>
-            Browsing levels and marking items here is just for your own
-            reference — it never changes your official {CURRENT_YEAR} score,
-            which you set separately in the table below the chart.
+            When you mark every requirement of a level as{" "}
+            <strong>Achieved</strong>, your {CURRENT_YEAR} score for that metric
+            is raised to that level automatically (it is never lowered
+            automatically). You can always adjust it in the table below the
+            chart.
           </p>
           <p>
             For each requirement listed under a level, mark it{" "}
@@ -298,8 +382,19 @@ export default function ReadinessLevelPage() {
           </p>
           <p>
             The progress bar fills one level at a time, starting from level 1 —
-            it only advances once every requirement of a level is marked
-            Achieved or Not applicable, in order.
+            it only advances once every requirement of a level is marked{" "}
+            <strong>Achieved</strong> or <strong>Not applicable</strong>, in
+            order. <strong>Not achieved</strong> doesn't move it forward.
+          </p>
+          <p>
+            Once you have answered every requirement of a level, the guide moves
+            on to the next level by itself — and after level 9, to the next
+            metric.
+          </p>
+          <p>
+            Nothing is stored until you press <strong>Submit answers</strong> —
+            it sends your scores and your level guide answers together, and only
+            then does your dashboard progress update.
           </p>
         </Modal>
       )}

@@ -1,0 +1,115 @@
+// BeScaled Hub data model (SQLite via Prisma).
+//
+// Mirrors the company record the API has always returned:
+//   { id, name, contactEmail, subscribed, filledReadinessForm, filledMaturityTest,
+//     readinessLevels, maturityAnswers, settings, guideProgress }
+// The nested objects (readinessLevels / maturityAnswers / settings / guideProgress)
+// are stored as normalized rows and re-assembled by src/db/companySerializer.js.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id                  Int      @id @default(autoincrement())
+  name                String
+  contactEmail        String
+  subscribed          Boolean  @default(true)
+  filledReadinessForm Boolean  @default(false)
+  filledMaturityTest  Boolean  @default(false)
+
+  // API `settings` object: { loginEmails, description, batch }
+  settingsDescription String   @default("")
+  settingsBatch       Int      @default(1)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  loginEmails      CompanyLoginEmail[]
+  readinessLevels  ReadinessLevel[]
+  maturityAnswers  MaturityAnswer[]
+  guideProgress    GuideProgress[]
+}
+
+// settings.loginEmails — ordered list (max 3, enforced by the API).
+model CompanyLoginEmail {
+  id        Int    @id @default(autoincrement())
+  companyId Int
+  position  Int
+  email     String
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, position])
+  @@index([companyId])
+}
+
+// One row per company + reporting period ("10/2026", "02/2027", "09/2027")
+// + metric (CRL, TRL, BRL, IPRL, TmRL, FRL). value: 0 = not filled yet, 1-9 = KTH level.
+model ReadinessLevel {
+  id        Int    @id @default(autoincrement())
+  companyId Int
+  year      String
+  metric    String
+  value     Int    @default(0)
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, year, metric])
+  @@index([companyId])
+}
+
+// AI Maturity Test: one row per company + dimension + stage. score: 0-4.
+model MaturityAnswer {
+  id             Int     @id @default(autoincrement())
+  companyId      Int
+  dimensionId    String
+  stageId        String
+  score          Int     @default(0)
+  comment        String  @default("")
+  dontUnderstand Boolean @default(false)
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, dimensionId, stageId])
+  @@index([companyId])
+}
+
+// Level-guide self-assessment: one row per company + metric + level + bullet.
+// status: "achieved" | "not-achieved" | "not-applicable" (a cleared bullet has no row).
+model GuideProgress {
+  id          Int    @id @default(autoincrement())
+  companyId   Int
+  metric      String
+  level       Int
+  bulletIndex Int
+  status      String
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, metric, level, bulletIndex])
+  @@index([companyId])
+}
+
+// Google accounts (stored lowercase) allowed to log in as admins.
+// Company users are authorized through CompanyLoginEmail instead.
+model AdminEmail {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+// Program batches (1-9, the values a company's settings.batch can take) and
+// when each one runs. Dates are months in "MM/YYYY" format; a batch has a row
+// only once an admin has set its dates.
+model Batch {
+  number    Int      @id
+  startDate String?
+  endDate   String?
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,26 @@
+{
+  "name": "bescaledhub-backend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "google-auth-library": "^11.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "prisma": "^6.19.3"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  }
+}

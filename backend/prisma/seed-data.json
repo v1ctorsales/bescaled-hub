@@ -1,0 +1,1211 @@
+[
+  {
+    "id": 1,
+    "name": "Company A",
+    "contactEmail": "innovation@companya.com",
+    "subscribed": true,
+    "filledReadinessForm": true,
+    "filledMaturityTest": true,
+    "readinessLevels": {
+      "10/2026": {
+        "CRL": 2,
+        "TRL": 4,
+        "BRL": 2,
+        "IPRL": 2,
+        "TmRL": 1,
+        "FRL": 2
+      },
+      "02/2027": {
+        "CRL": 3,
+        "TRL": 5,
+        "BRL": 3,
+        "IPRL": 3,
+        "TmRL": 2,
+        "FRL": 3
+      },
+      "09/2027": {
+        "CRL": 4,
+        "TRL": 6,
+        "BRL": 4,
+        "IPRL": 4,
+        "TmRL": 3,
+        "FRL": 4
+      }
+    },
+    "maturityAnswers": {
+      "human-agency-oversight": {
+        "conceptual": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "transparency-explainability": {
+        "conceptual": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 1,
+          "comment": "We publish basic model cards internally.",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "fairness-inclusion": {
+        "conceptual": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "privacy-data-governance": {
+        "conceptual": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "technical-robustness-safety": {
+        "conceptual": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "accountability": {
+        "conceptual": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": true
+        },
+        "ready-to-monitor": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "traceability": {
+        "conceptual": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "innovation-scalability": {
+        "conceptual": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "knowledge-sharing": {
+        "conceptual": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 0,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      }
+    },
+    "settings": {
+      "loginEmails": [
+        "innovation@companya.com"
+      ],
+      "description": "",
+      "batch": 1
+    },
+    "guideProgress": {
+      "CRL:1:0": "achieved",
+      "CRL:1:1": "achieved",
+      "CRL:1:2": "achieved",
+      "CRL:2:0": "achieved",
+      "CRL:2:1": "achieved",
+      "CRL:2:2": "achieved",
+      "TRL:1:0": "achieved",
+      "TRL:1:1": "achieved",
+      "TRL:2:0": "achieved",
+      "TRL:2:1": "achieved",
+      "TRL:3:0": "achieved",
+      "TRL:3:1": "achieved",
+      "TRL:3:2": "achieved",
+      "TRL:3:3": "achieved",
+      "TRL:4:0": "achieved",
+      "TRL:4:1": "achieved",
+      "BRL:1:0": "achieved",
+      "BRL:1:1": "achieved",
+      "BRL:1:2": "achieved",
+      "BRL:1:3": "achieved",
+      "BRL:2:0": "achieved",
+      "BRL:2:1": "achieved",
+      "BRL:2:2": "achieved",
+      "IPRL:1:0": "achieved",
+      "IPRL:1:1": "achieved",
+      "IPRL:1:2": "achieved",
+      "IPRL:1:3": "achieved",
+      "IPRL:2:0": "achieved",
+      "IPRL:2:1": "achieved",
+      "IPRL:2:2": "achieved",
+      "TmRL:1:0": "achieved",
+      "TmRL:1:1": "achieved",
+      "FRL:1:0": "achieved",
+      "FRL:1:1": "achieved",
+      "FRL:1:2": "achieved",
+      "FRL:1:3": "achieved",
+      "FRL:2:0": "achieved",
+      "FRL:2:1": "achieved",
+      "FRL:2:2": "achieved"
+    }
+  },
+  {
+    "id": 2,
+    "name": "Company B",
+    "contactEmail": "contact@companyb.io",
+    "subscribed": true,
+    "filledReadinessForm": true,
+    "filledMaturityTest": false,
+    "readinessLevels": {
+      "10/2026": {
+        "CRL": 1,
+        "TRL": 2,
+        "BRL": 1,
+        "IPRL": 1,
+        "TmRL": 2,
+        "FRL": 1
+      },
+      "02/2027": {
+        "CRL": 2,
+        "TRL": 3,
+        "BRL": 2,
+        "IPRL": 2,
+        "TmRL": 3,
+        "FRL": 2
+      },
+      "09/2027": {
+        "CRL": 3,
+        "TRL": 4,
+        "BRL": 3,
+        "IPRL": 3,
+        "TmRL": 4,
+        "FRL": 3
+      }
+    },
+    "maturityAnswers": {},
+    "settings": {
+      "loginEmails": [
+        "contact@companyb.io"
+      ],
+      "description": "",
+      "batch": 1
+    },
+    "guideProgress": {
+      "CRL:1:0": "achieved",
+      "CRL:1:1": "achieved",
+      "CRL:1:2": "achieved",
+      "TRL:1:0": "achieved",
+      "TRL:1:1": "achieved",
+      "TRL:2:0": "achieved",
+      "TRL:2:1": "achieved",
+      "BRL:1:0": "achieved",
+      "BRL:1:1": "achieved",
+      "BRL:1:2": "achieved",
+      "BRL:1:3": "achieved",
+      "IPRL:1:0": "achieved",
+      "IPRL:1:1": "achieved",
+      "IPRL:1:2": "achieved",
+      "IPRL:1:3": "achieved",
+      "TmRL:1:0": "achieved",
+      "TmRL:1:1": "achieved",
+      "TmRL:2:0": "achieved",
+      "TmRL:2:1": "achieved",
+      "TmRL:2:2": "achieved",
+      "FRL:1:0": "achieved",
+      "FRL:1:1": "achieved",
+      "FRL:1:2": "achieved",
+      "FRL:1:3": "achieved"
+    }
+  },
+  {
+    "id": 3,
+    "name": "Company C",
+    "contactEmail": "hello@companyc.com",
+    "subscribed": true,
+    "filledReadinessForm": false,
+    "filledMaturityTest": false,
+    "readinessLevels": {
+      "10/2026": {
+        "CRL": 0,
+        "TRL": 0,
+        "BRL": 0,
+        "IPRL": 0,
+        "TmRL": 0,
+        "FRL": 0
+      },
+      "02/2027": {
+        "CRL": 0,
+        "TRL": 0,
+        "BRL": 0,
+        "IPRL": 0,
+        "TmRL": 0,
+        "FRL": 0
+      },
+      "09/2027": {
+        "CRL": 0,
+        "TRL": 0,
+        "BRL": 0,
+        "IPRL": 0,
+        "TmRL": 0,
+        "FRL": 0
+      }
+    },
+    "maturityAnswers": {},
+    "settings": {
+      "loginEmails": [
+        "hello@companyc.com"
+      ],
+      "description": "",
+      "batch": 1
+    },
+    "guideProgress": {}
+  },
+  {
+    "id": 4,
+    "name": "Company D",
+    "contactEmail": "team@companyd.co",
+    "subscribed": true,
+    "filledReadinessForm": true,
+    "filledMaturityTest": true,
+    "readinessLevels": {
+      "10/2026": {
+        "CRL": 5,
+        "TRL": 6,
+        "BRL": 4,
+        "IPRL": 3,
+        "TmRL": 5,
+        "FRL": 4
+      },
+      "02/2027": {
+        "CRL": 6,
+        "TRL": 7,
+        "BRL": 5,
+        "IPRL": 4,
+        "TmRL": 6,
+        "FRL": 5
+      },
+      "09/2027": {
+        "CRL": 7,
+        "TRL": 8,
+        "BRL": 6,
+        "IPRL": 5,
+        "TmRL": 7,
+        "FRL": 6
+      }
+    },
+    "maturityAnswers": {
+      "human-agency-oversight": {
+        "conceptual": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 3,
+          "comment": "Staff complete annual ethical AI training.",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "transparency-explainability": {
+        "conceptual": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "fairness-inclusion": {
+        "conceptual": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "privacy-data-governance": {
+        "conceptual": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "technical-robustness-safety": {
+        "conceptual": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "accountability": {
+        "conceptual": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 2,
+          "comment": "Dashboards reviewed monthly by the governance board.",
+          "dontUnderstand": false
+        }
+      },
+      "traceability": {
+        "conceptual": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "innovation-scalability": {
+        "conceptual": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "knowledge-sharing": {
+        "conceptual": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 4,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      }
+    },
+    "settings": {
+      "loginEmails": [
+        "team@companyd.co"
+      ],
+      "description": "",
+      "batch": 1
+    },
+    "guideProgress": {
+      "CRL:1:0": "achieved",
+      "CRL:1:1": "achieved",
+      "CRL:1:2": "achieved",
+      "CRL:2:0": "achieved",
+      "CRL:2:1": "achieved",
+      "CRL:2:2": "achieved",
+      "CRL:3:0": "achieved",
+      "CRL:3:1": "achieved",
+      "CRL:3:2": "achieved",
+      "CRL:4:0": "achieved",
+      "CRL:4:1": "achieved",
+      "CRL:4:2": "achieved",
+      "CRL:4:3": "achieved",
+      "CRL:5:0": "achieved",
+      "CRL:5:1": "achieved",
+      "CRL:5:2": "achieved",
+      "CRL:5:3": "achieved",
+      "TRL:1:0": "achieved",
+      "TRL:1:1": "achieved",
+      "TRL:2:0": "achieved",
+      "TRL:2:1": "achieved",
+      "TRL:3:0": "achieved",
+      "TRL:3:1": "achieved",
+      "TRL:3:2": "achieved",
+      "TRL:3:3": "achieved",
+      "TRL:4:0": "achieved",
+      "TRL:4:1": "achieved",
+      "TRL:5:0": "achieved",
+      "TRL:5:1": "achieved",
+      "TRL:5:2": "achieved",
+      "TRL:5:3": "achieved",
+      "TRL:6:0": "achieved",
+      "TRL:6:1": "achieved",
+      "TRL:6:2": "achieved",
+      "TRL:6:3": "achieved",
+      "BRL:1:0": "achieved",
+      "BRL:1:1": "achieved",
+      "BRL:1:2": "achieved",
+      "BRL:1:3": "achieved",
+      "BRL:2:0": "achieved",
+      "BRL:2:1": "achieved",
+      "BRL:2:2": "achieved",
+      "BRL:3:0": "achieved",
+      "BRL:3:1": "achieved",
+      "BRL:3:2": "achieved",
+      "BRL:3:3": "achieved",
+      "BRL:4:0": "achieved",
+      "BRL:4:1": "achieved",
+      "BRL:4:2": "achieved",
+      "BRL:4:3": "achieved",
+      "IPRL:1:0": "achieved",
+      "IPRL:1:1": "achieved",
+      "IPRL:1:2": "achieved",
+      "IPRL:1:3": "achieved",
+      "IPRL:2:0": "achieved",
+      "IPRL:2:1": "achieved",
+      "IPRL:2:2": "achieved",
+      "IPRL:3:0": "achieved",
+      "IPRL:3:1": "achieved",
+      "IPRL:3:2": "achieved",
+      "IPRL:3:3": "achieved",
+      "TmRL:1:0": "achieved",
+      "TmRL:1:1": "achieved",
+      "TmRL:2:0": "achieved",
+      "TmRL:2:1": "achieved",
+      "TmRL:2:2": "achieved",
+      "TmRL:3:0": "achieved",
+      "TmRL:3:1": "achieved",
+      "TmRL:3:2": "achieved",
+      "TmRL:4:0": "achieved",
+      "TmRL:4:1": "achieved",
+      "TmRL:4:2": "achieved",
+      "TmRL:4:3": "achieved",
+      "TmRL:4:4": "achieved",
+      "TmRL:5:0": "achieved",
+      "TmRL:5:1": "achieved",
+      "TmRL:5:2": "achieved",
+      "TmRL:5:3": "achieved",
+      "TmRL:5:4": "achieved",
+      "FRL:1:0": "achieved",
+      "FRL:1:1": "achieved",
+      "FRL:1:2": "achieved",
+      "FRL:1:3": "achieved",
+      "FRL:2:0": "achieved",
+      "FRL:2:1": "achieved",
+      "FRL:2:2": "achieved",
+      "FRL:3:0": "achieved",
+      "FRL:3:1": "achieved",
+      "FRL:3:2": "achieved",
+      "FRL:3:3": "achieved",
+      "FRL:4:0": "achieved",
+      "FRL:4:1": "achieved",
+      "FRL:4:2": "achieved",
+      "FRL:4:3": "achieved"
+    }
+  },
+  {
+    "id": 5,
+    "name": "Company E",
+    "contactEmail": "info@companye.com",
+    "subscribed": true,
+    "filledReadinessForm": true,
+    "filledMaturityTest": true,
+    "readinessLevels": {
+      "10/2026": {
+        "CRL": 3,
+        "TRL": 3,
+        "BRL": 3,
+        "IPRL": 3,
+        "TmRL": 3,
+        "FRL": 3
+      },
+      "02/2027": {
+        "CRL": 3,
+        "TRL": 4,
+        "BRL": 4,
+        "IPRL": 3,
+        "TmRL": 4,
+        "FRL": 3
+      },
+      "09/2027": {
+        "CRL": 4,
+        "TRL": 5,
+        "BRL": 4,
+        "IPRL": 4,
+        "TmRL": 5,
+        "FRL": 4
+      }
+    },
+    "maturityAnswers": {
+      "human-agency-oversight": {
+        "conceptual": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "transparency-explainability": {
+        "conceptual": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "fairness-inclusion": {
+        "conceptual": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "privacy-data-governance": {
+        "conceptual": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 2,
+          "comment": "GDPR-aligned retention policy in place.",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "technical-robustness-safety": {
+        "conceptual": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "accountability": {
+        "conceptual": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "traceability": {
+        "conceptual": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "innovation-scalability": {
+        "conceptual": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      },
+      "knowledge-sharing": {
+        "conceptual": {
+          "score": 3,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "implementation": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "evaluation-reflection": {
+          "score": 2,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "ready-to-monitor": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        },
+        "monitoring-sharing": {
+          "score": 1,
+          "comment": "",
+          "dontUnderstand": false
+        }
+      }
+    },
+    "settings": {
+      "loginEmails": [
+        "info@companye.com"
+      ],
+      "description": "",
+      "batch": 1
+    },
+    "guideProgress": {
+      "CRL:1:0": "achieved",
+      "CRL:1:1": "achieved",
+      "CRL:1:2": "achieved",
+      "CRL:2:0": "achieved",
+      "CRL:2:1": "achieved",
+      "CRL:2:2": "achieved",
+      "CRL:3:0": "achieved",
+      "CRL:3:1": "achieved",
+      "CRL:3:2": "achieved",
+      "TRL:1:0": "achieved",
+      "TRL:1:1": "achieved",
+      "TRL:2:0": "achieved",
+      "TRL:2:1": "achieved",
+      "TRL:3:0": "achieved",
+      "TRL:3:1": "achieved",
+      "TRL:3:2": "achieved",
+      "TRL:3:3": "achieved",
+      "BRL:1:0": "achieved",
+      "BRL:1:1": "achieved",
+      "BRL:1:2": "achieved",
+      "BRL:1:3": "achieved",
+      "BRL:2:0": "achieved",
+      "BRL:2:1": "achieved",
+      "BRL:2:2": "achieved",
+      "BRL:3:0": "achieved",
+      "BRL:3:1": "achieved",
+      "BRL:3:2": "achieved",
+      "BRL:3:3": "achieved",
+      "IPRL:1:0": "achieved",
+      "IPRL:1:1": "achieved",
+      "IPRL:1:2": "achieved",
+      "IPRL:1:3": "achieved",
+      "IPRL:2:0": "achieved",
+      "IPRL:2:1": "achieved",
+      "IPRL:2:2": "achieved",
+      "IPRL:3:0": "achieved",
+      "IPRL:3:1": "achieved",
+      "IPRL:3:2": "achieved",
+      "IPRL:3:3": "achieved",
+      "TmRL:1:0": "achieved",
+      "TmRL:1:1": "achieved",
+      "TmRL:2:0": "achieved",
+      "TmRL:2:1": "achieved",
+      "TmRL:2:2": "achieved",
+      "TmRL:3:0": "achieved",
+      "TmRL:3:1": "achieved",
+      "TmRL:3:2": "achieved",
+      "FRL:1:0": "achieved",
+      "FRL:1:1": "achieved",
+      "FRL:1:2": "achieved",
+      "FRL:1:3": "achieved",
+      "FRL:2:0": "achieved",
+      "FRL:2:1": "achieved",
+      "FRL:2:2": "achieved",
+      "FRL:3:0": "achieved",
+      "FRL:3:1": "achieved",
+      "FRL:3:2": "achieved",
+      "FRL:3:3": "achieved"
+    }
+  },
+  {
+    "id": 6,
+    "name": "Company F",
+    "contactEmail": "founders@companyf.dev",
+    "subscribed": false,
+    "filledReadinessForm": false,
+    "filledMaturityTest": false,
+    "readinessLevels": {
+      "10/2026": {
+        "CRL": 0,
+        "TRL": 0,
+        "BRL": 0,
+        "IPRL": 0,
+        "TmRL": 0,
+        "FRL": 0
+      },
+      "02/2027": {
+        "CRL": 0,
+        "TRL": 0,
+        "BRL": 0,
+        "IPRL": 0,
+        "TmRL": 0,
+        "FRL": 0
+      },
+      "09/2027": {
+        "CRL": 0,
+        "TRL": 0,
+        "BRL": 0,
+        "IPRL": 0,
+        "TmRL": 0,
+        "FRL": 0
+      }
+    },
+    "maturityAnswers": {},
+    "settings": {
+      "loginEmails": [
+        "founders@companyf.dev"
+      ],
+      "description": "",
+      "batch": 1
+    },
+    "guideProgress": {}
+  }
+]

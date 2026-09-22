@@ -1,16 +1,42 @@
-# React + Vite
+# BeScaled Hub
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Monorepo with two packages:
 
-Currently, two official plugins are available:
+- `frontend/` — Vite + React (JavaScript) SPA.
+- `backend/` — Node.js + Express API backed by SQLite (via Prisma). Data persists
+  across restarts; login is real Google OAuth (admins vs. company users). See `backend/README.md`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Running everything together
 
-## React Compiler
+From the repo root:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm run install:all   # installs both frontend/ and backend/ dependencies
+npm run dev            # starts both at once (frontend on :5173, backend on :3001)
+```
 
-## Expanding the ESLint configuration
+## Running one side at a time
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+cd frontend && npm install && npm run dev     # http://localhost:5173
+cd backend  && npm install && npx prisma migrate deploy && npx prisma db seed   # first time only
+cd backend  && npm run dev                    # http://localhost:3001
+```
+
+The frontend talks to the backend over HTTP via `frontend/src/services/`.
+Each service file there is scoped to one domain (`authService.js`,
+`companiesService.js`, `readinessLevelService.js`, `maturityTestService.js`)
+and calls the matching route in `backend/src/routes/`. No component talks to
+the backend directly — everything goes through those services.
+
+## Environment variables
+
+Copy the `.env.example` in each package to `.env` and adjust if needed:
+
+- `frontend/.env.example` → `VITE_API_BASE_URL` (where the frontend expects the API) and `VITE_GOOGLE_CLIENT_ID`.
+- `backend/.env.example` → `PORT`, `FRONTEND_ORIGIN` (for CORS), `DATABASE_URL` (SQLite file), `GOOGLE_CLIENT_ID` and `JWT_SECRET`.
+
+## Deploying the frontend (Vercel)
+
+Set the project's **Root Directory** to `frontend/` in the Vercel dashboard.
+The backend isn't deployed anywhere yet — that's a separate future step.
