@@ -3,8 +3,8 @@
 Monorepo with two packages:
 
 - `frontend/` — Vite + React (JavaScript) SPA.
-- `backend/` — Node.js + Express API backed by SQLite (via Prisma). Data persists
-  across restarts; login is real Google OAuth (admins vs. company users). See `backend/README.md`.
+- `backend/` — Node.js + Express API backed by Postgres on Supabase (via Prisma).
+  Login is real Google OAuth (admins vs. company users). See `backend/README.md`.
 
 ## Running everything together
 
@@ -34,7 +34,7 @@ the backend directly — everything goes through those services.
 Copy the `.env.example` in each package to `.env` and adjust if needed:
 
 - `frontend/.env.example` → `VITE_API_BASE_URL` (where the frontend expects the API) and `VITE_GOOGLE_CLIENT_ID`.
-- `backend/.env.example` → `PORT`, `FRONTEND_ORIGIN` (for CORS), `DATABASE_URL` (SQLite file), `GOOGLE_CLIENT_ID` and `JWT_SECRET`.
+- `backend/.env.example` → `PORT`, `FRONTEND_ORIGIN` (for CORS), `DATABASE_URL`/`DIRECT_URL` (Postgres/Supabase), `GOOGLE_CLIENT_ID`, `JWT_SECRET` and `ADMIN_EMAILS`.
 
 ## Deploying the frontend (Vercel)
 

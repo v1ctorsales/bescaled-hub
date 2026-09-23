@@ -1,4 +1,4 @@
-// BeScaled Hub data model (SQLite via Prisma).
+// BeScaled Hub data model (Postgres, hosted on Supabase, via Prisma).
 //
 // Mirrors the company record the API has always returned:
 //   { id, name, contactEmail, subscribed, filledReadinessForm, filledMaturityTest,
@@ -11,8 +11,12 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Pooled (Supavisor, port 6543) — what the running app uses.
+  url       = env("DATABASE_URL")
+  // Direct (port 5432) — Prisma Migrate needs this; the pooler doesn't
+  // support the session-level features migrations rely on.
+  directUrl = env("DIRECT_URL")
 }
 
 model Company {
