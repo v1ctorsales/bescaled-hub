@@ -1232,6 +1232,19 @@
   color: var(--text);
 }
 
+/* ---------- Version badge ---------- */
+.version-badge {
+  position: fixed;
+  right: 10px;
+  bottom: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.6;
+  pointer-events: none;
+  user-select: none;
+  z-index: 90;
+}
+
 /* ---------- Modal ---------- */
 .modal-overlay {
   position: fixed;

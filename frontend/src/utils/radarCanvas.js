@@ -1,4 +1,5 @@
-import { READINESS_METRICS, READINESS_SCALE_MAX } from "../config";
+import { READINESS_METRICS, READINESS_SCALE_MIN, READINESS_SCALE_MAX } from "../config";
+import { levelOrMin } from "./readinessLevel";
 
 // Matches the colors used by src/components/RadarChartView.jsx (recharts),
 // redrawn here with plain Canvas 2D so it can be rasterized into a PNG for
@@ -30,9 +31,18 @@ export function renderRadarChartImage(readinessLevels, years, { size = 480 } = {
     };
   }
 
+  // One ring per level of the 1-9 scale (matching the live chart's
+  // PolarRadiusAxis: domain [READINESS_SCALE_MIN, READINESS_SCALE_MAX],
+  // 9 ticks) — level 1 sits at the center (fraction 0), level 9 at the edge.
+  const scaleSpan = READINESS_SCALE_MAX - READINESS_SCALE_MIN;
+  const gridFractions = Array.from(
+    { length: scaleSpan + 1 },
+    (_, i) => i / scaleSpan,
+  );
+
   ctx.strokeStyle = "#e3e4ea";
   ctx.lineWidth = 1;
-  [0.25, 0.5, 0.75, 1].forEach((frac) => {
+  gridFractions.forEach((frac) => {
     ctx.beginPath();
     for (let i = 0; i <= n; i++) {
       const p = pointFor(i % n, frac);
@@ -62,8 +72,8 @@ export function renderRadarChartImage(readinessLevels, years, { size = 480 } = {
     const color = YEAR_COLORS[yi % YEAR_COLORS.length];
     ctx.beginPath();
     metrics.forEach((metric, i) => {
-      const value = readinessLevels?.[year]?.[metric] ?? 0;
-      const fraction = Math.max(0, Math.min(1, value / READINESS_SCALE_MAX));
+      const value = levelOrMin(readinessLevels?.[year]?.[metric]);
+      const fraction = Math.max(0, Math.min(1, (value - READINESS_SCALE_MIN) / scaleSpan));
       const p = pointFor(i, fraction);
       if (i === 0) ctx.moveTo(p.x, p.y);
       else ctx.lineTo(p.x, p.y);

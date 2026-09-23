@@ -222,7 +222,7 @@ export default function ReadinessLevelPage() {
 
         <section className="panel">
           <div className="panel__header">
-            <h2>KTH - Level guide</h2>
+            <h2>KTH - Innovation Readiness Level</h2>
           </div>
           <p className="level-guide__hint">
             Pick a metric and step through the levels below to see what's

@@ -24,19 +24,33 @@ function sanitizeSheetName(name) {
   return String(name).replace(/[\\/?*[\]:]/g, "-").slice(0, 31) || "Sheet";
 }
 
-// sheets: [{ name, rows }] — one worksheet per entry, skipping any with no
-// rows. Each sheet's columns are derived from its own rows' keys.
+// sheets: [{ name, rows, image? }] — one worksheet per entry, skipping any
+// with no rows. Each sheet's columns are derived from its own rows' keys.
+// `image`, when given, is a PNG data URL (as returned by
+// utils/radarCanvas.js) placed a couple of rows below the table; `size` is
+// its square side in pixels (defaults to 320).
 export async function downloadXlsxSheets(sheets, filename) {
   const nonEmptySheets = sheets.filter((s) => s.rows.length);
   if (!nonEmptySheets.length) return;
 
   const workbook = new ExcelJS.Workbook();
-  nonEmptySheets.forEach(({ name, rows }) => {
+  nonEmptySheets.forEach(({ name, rows, image }) => {
     const sheet = workbook.addWorksheet(sanitizeSheetName(name));
     const headers = Object.keys(rows[0]);
     sheet.columns = headers.map((header) => ({ header, key: header, width: 28 }));
     sheet.getRow(1).font = { bold: true };
     sheet.addRows(rows);
+
+    if (image) {
+      const size = image.size ?? 320;
+      const imageId = workbook.addImage({ base64: image.dataUrl, extension: "png" });
+      // Row/col are 0-indexed; row 0 is the header and rows 1..rows.length
+      // are the data, so this starts 2 rows below the table.
+      sheet.addImage(imageId, {
+        tl: { col: 0, row: rows.length + 2 },
+        ext: { width: size, height: size },
+      });
+    }
   });
 
   const buffer = await workbook.xlsx.writeBuffer();
@@ -81,10 +95,16 @@ export async function exportReadinessXlsx(companyName, readinessLevels, guidePro
     return row;
   });
 
+  const radarImage = renderRadarChartImage(readinessLevels, READINESS_YEARS);
+
   await downloadXlsxSheets(
     [
       { name: "Level guide", rows: guideRows },
-      { name: "Current Innovation Readiness Level", rows: readinessRows },
+      {
+        name: "Current Innovation Readiness Level",
+        rows: readinessRows,
+        image: { dataUrl: radarImage, size: 320 },
+      },
     ],
     `${companyName.replace(/\s+/g, "_")}_readiness.xlsx`,
   );

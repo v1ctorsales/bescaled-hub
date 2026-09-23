@@ -8,8 +8,14 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { READINESS_METRICS, READINESS_SCALE_MIN, READINESS_SCALE_MAX } from "../config";
+import {
+  READINESS_METRICS,
+  READINESS_SCALE_MIN,
+  READINESS_SCALE_MAX,
+  READINESS_YEARS,
+} from "../config";
 import { levelOrMin } from "../utils/readinessLevel";
+import { monthYearToIndex } from "../utils/validation";
 
 // Blue / orange / brown.
 const YEAR_COLORS = {
@@ -20,9 +26,22 @@ const YEAR_COLORS = {
 
 // readinessLevels: { [year]: { CRL, TRL, BRL, IPRL, TmRL, FRL } }
 export default function RadarChartView({ readinessLevels, years }) {
+  // The legend must always read "10/2026, 02/2027, 09/2027" — the program's
+  // reporting periods in order, i.e. READINESS_YEARS — regardless of what
+  // order `years` is passed in. Sort by position in that canonical list;
+  // anything not in it (shouldn't happen) falls back to calendar order, after.
+  const sortedYears = [...years].sort((a, b) => {
+    const ai = READINESS_YEARS.indexOf(a);
+    const bi = READINESS_YEARS.indexOf(b);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return (monthYearToIndex(a) ?? Infinity) - (monthYearToIndex(b) ?? Infinity);
+  });
+
   const data = READINESS_METRICS.map((metric) => {
     const row = { metric };
-    years.forEach((year) => {
+    sortedYears.forEach((year) => {
       row[year] = levelOrMin(readinessLevels?.[year]?.[metric]);
     });
     return row;
@@ -38,7 +57,7 @@ export default function RadarChartView({ readinessLevels, years }) {
           domain={[READINESS_SCALE_MIN, READINESS_SCALE_MAX]}
           tickCount={READINESS_SCALE_MAX - READINESS_SCALE_MIN + 1}
         />
-        {years.map((year, i) => (
+        {sortedYears.map((year, i) => (
           <Radar
             key={year}
             name={String(year)}
@@ -48,7 +67,15 @@ export default function RadarChartView({ readinessLevels, years }) {
             fillOpacity={0.2}
           />
         ))}
-        <Legend />
+        {/* Explicit payload, in the same chronological order as the Radar series
+            above — recharts' default Legend order isn't guaranteed to match it. */}
+        <Legend
+          payload={sortedYears.map((year, i) => ({
+            value: String(year),
+            type: "square",
+            color: YEAR_COLORS[i % 3],
+          }))}
+        />
         <Tooltip />
       </RadarChart>
     </ResponsiveContainer>

@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CompanyDataProvider } from "./context/CompanyDataContext";
 import { CompaniesProvider } from "./context/CompaniesContext";
 import RequireRole from "./components/RequireRole";
+import VersionBadge from "./components/VersionBadge";
 import Login from "./pages/Login";
 import UserDashboard from "./pages/UserDashboard";
 import ReadinessLevelPage from "./pages/ReadinessLevelPage";
@@ -40,6 +41,7 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </SessionData>
+      <VersionBadge />
     </AuthProvider>
   );
 }

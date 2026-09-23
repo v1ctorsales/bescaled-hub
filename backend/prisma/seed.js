@@ -10,10 +10,18 @@ const companies = JSON.parse(
 
 const prisma = new PrismaClient();
 
-// Google accounts allowed to log in as admins (always lowercase).
-const ADMIN_EMAILS = ["victorsa@tlu.ee", "bauters@tlu.ee", "buhari@tlu.ee"];
+// Google accounts allowed to log in as admins: ADMIN_EMAILS in .env,
+// ";"-separated, normalized to lowercase with blank entries dropped.
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
+  .split(";")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
 
 async function seedAdmins() {
+  if (ADMIN_EMAILS.length === 0) {
+    console.log("ADMIN_EMAILS is not set — skipping admin seeding.");
+    return;
+  }
   // upsert, so re-running the seed never duplicates or fails on existing rows.
   for (const email of ADMIN_EMAILS) {
     await prisma.adminEmail.upsert({ where: { email }, update: {}, create: { email } });
@@ -21,19 +29,25 @@ async function seedAdmins() {
   console.log(`Ensured ${ADMIN_EMAILS.length} admin emails.`);
 }
 
-async function main() {
-  await seedAdmins();
-
-  // Never clobber real data: only seed an empty database.
-  // (`prisma migrate reset` empties it first, then runs this again.)
-  if ((await prisma.company.count()) > 0) {
-    console.log("Database already has companies — skipping seed.");
-    return;
-  }
-
-  for (const c of companies) {
-    await prisma.company.create({
-      data: {
+// Fully idempotent: upserts the company row, then replaces its child rows
+// (login emails, readiness levels, maturity answers, guide progress)
+// wholesale. Safe to run against an empty database (a fresh container start,
+// per backend/Dockerfile) or an already-seeded one — either way it ends in
+// the exact same state, so it never fails on duplicate keys.
+async function seedCompany(c) {
+  await prisma.$transaction(async (tx) => {
+    await tx.company.upsert({
+      where: { id: c.id },
+      update: {
+        name: c.name,
+        contactEmail: c.contactEmail,
+        subscribed: c.subscribed,
+        filledReadinessForm: c.filledReadinessForm,
+        filledMaturityTest: c.filledMaturityTest,
+        settingsDescription: c.settings.description,
+        settingsBatch: c.settings.batch,
+      },
+      create: {
         id: c.id,
         name: c.name,
         contactEmail: c.contactEmail,
@@ -42,35 +56,66 @@ async function main() {
         filledMaturityTest: c.filledMaturityTest,
         settingsDescription: c.settings.description,
         settingsBatch: c.settings.batch,
-        loginEmails: {
-          create: c.settings.loginEmails.map((email, position) => ({ position, email })),
-        },
-        readinessLevels: {
-          create: Object.entries(c.readinessLevels).flatMap(([year, metrics]) =>
-            Object.entries(metrics).map(([metric, value]) => ({ year, metric, value })),
-          ),
-        },
-        maturityAnswers: {
-          create: Object.entries(c.maturityAnswers).flatMap(([dimensionId, stages]) =>
-            Object.entries(stages).map(([stageId, a]) => ({
-              dimensionId,
-              stageId,
-              score: a.score,
-              comment: a.comment,
-              dontUnderstand: a.dontUnderstand,
-            })),
-          ),
-        },
-        guideProgress: {
-          create: Object.entries(c.guideProgress).map(([key, status]) => {
-            const [metric, level, bulletIndex] = key.split(":");
-            return { metric, level: Number(level), bulletIndex: Number(bulletIndex), status };
-          }),
-        },
       },
     });
+
+    await tx.companyLoginEmail.deleteMany({ where: { companyId: c.id } });
+    await tx.companyLoginEmail.createMany({
+      data: c.settings.loginEmails.map((email, position) => ({
+        companyId: c.id,
+        position,
+        email,
+      })),
+    });
+
+    await tx.readinessLevel.deleteMany({ where: { companyId: c.id } });
+    await tx.readinessLevel.createMany({
+      data: Object.entries(c.readinessLevels).flatMap(([year, metrics]) =>
+        Object.entries(metrics).map(([metric, value]) => ({
+          companyId: c.id,
+          year,
+          metric,
+          value,
+        })),
+      ),
+    });
+
+    await tx.maturityAnswer.deleteMany({ where: { companyId: c.id } });
+    await tx.maturityAnswer.createMany({
+      data: Object.entries(c.maturityAnswers).flatMap(([dimensionId, stages]) =>
+        Object.entries(stages).map(([stageId, a]) => ({
+          companyId: c.id,
+          dimensionId,
+          stageId,
+          score: a.score,
+          comment: a.comment,
+          dontUnderstand: a.dontUnderstand,
+        })),
+      ),
+    });
+
+    await tx.guideProgress.deleteMany({ where: { companyId: c.id } });
+    await tx.guideProgress.createMany({
+      data: Object.entries(c.guideProgress).map(([key, status]) => {
+        const [metric, level, bulletIndex] = key.split(":");
+        return {
+          companyId: c.id,
+          metric,
+          level: Number(level),
+          bulletIndex: Number(bulletIndex),
+          status,
+        };
+      }),
+    });
+  });
+}
+
+async function main() {
+  await seedAdmins();
+  for (const c of companies) {
+    await seedCompany(c);
   }
-  console.log(`Seeded ${companies.length} companies.`);
+  console.log(`Ensured ${companies.length} sample companies.`);
 }
 
 main()
