@@ -41,6 +41,8 @@ export function CompanyDataProvider({ children }) {
   // crash while this loads.
   const [maturityAnswers, setMaturityAnswers] = useState(createBlankMaturityAnswers);
   const [maturityTouched, setMaturityTouched] = useState(new Set());
+  const [maturitySubmitting, setMaturitySubmitting] = useState(false);
+  const [maturitySubmitError, setMaturitySubmitError] = useState(null);
   // Self-assessment status ("achieved" | "not-achieved" | "not-applicable")
   // for each level-guide bullet, keyed by "metric:level:bulletIndex". This is
   // purely a reference aid for browsing the guide — it never changes the
@@ -147,12 +149,20 @@ export function CompanyDataProvider({ children }) {
     }
   }
 
+  // Each rating/comment is already saved as it's entered (updateMaturityAnswer
+  // above) — this only flips the "submitted" flag server-side. Mirrors
+  // saveReadiness's pattern: state is set from the confirmed result, not
+  // optimistically, so a failed request can't leave the UI claiming success.
   async function submitMaturityTest() {
-    setMaturityTestFilled(true);
+    setMaturitySubmitting(true);
+    setMaturitySubmitError(null);
     try {
       await maturityTestService.submitMaturityTest();
+      setMaturityTestFilled(true);
     } catch (err) {
-      setError(err);
+      setMaturitySubmitError(err);
+    } finally {
+      setMaturitySubmitting(false);
     }
   }
 
@@ -176,6 +186,8 @@ export function CompanyDataProvider({ children }) {
         maturityTouched,
         updateMaturityAnswer,
         submitMaturityTest,
+        maturitySubmitting,
+        maturitySubmitError,
         loading,
         error,
       }}

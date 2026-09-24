@@ -43,7 +43,11 @@ export function exportCompaniesPdf(companies) {
 
   companies.forEach((company, index) => {
     if (index > 0) doc.addPage();
-    let y = 22;
+    // The first company shares its page with the report title/date above —
+    // without extra room here, its name (14pt) gets squeezed between the
+    // title (y 18) and the "Generated ..." line (y 24) right underneath it.
+    // Later companies each get a fresh page, so they don't need it.
+    let y = index === 0 ? 38 : 22;
 
     doc.setFontSize(14);
     doc.text(company.name, margin, y);

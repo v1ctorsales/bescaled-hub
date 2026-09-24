@@ -6,7 +6,7 @@ import ReadinessTable from "../components/ReadinessTable";
 import RadarChartView from "../components/RadarChartView";
 import Tabs from "../components/Tabs";
 import Thermometer from "../components/Thermometer";
-import LevelCompletionBar from "../components/LevelCompletionBar";
+import KthProgressBar from "../components/KthProgressBar";
 import Modal from "../components/Modal";
 import HelpIcon from "../components/icons/HelpIcon";
 import {
@@ -25,8 +25,8 @@ import {
 import { levelOrMin } from "../utils/readinessLevel";
 import {
   isLevelAchieved,
-  isLevelCleared,
   isLevelComplete,
+  getReadinessItemCounts,
 } from "../utils/readinessProgress";
 
 const CURRENT_YEAR = READINESS_YEARS[0];
@@ -34,27 +34,6 @@ const CURRENT_YEAR = READINESS_YEARS[0];
 // Pause before the guide moves on by itself, so the user sees the item they
 // just marked.
 const AUTO_ADVANCE_DELAY_MS = 300;
-
-// Overall progress through a metric's guide: the count advances by one level
-// for each level cleared (every bullet Achieved or Not applicable — "Not
-// achieved" doesn't count), counted as an unbroken streak starting at
-// level 1 — a level cleared out of order (e.g. level 3 before level 2)
-// doesn't count until every level before it is also cleared.
-function getMetricProgress(metric, progress) {
-  const totalLevels = READINESS_SCALE_MAX - READINESS_SCALE_MIN + 1;
-  let completeLevelsCount = 0;
-  while (
-    completeLevelsCount < totalLevels &&
-    isLevelCleared(metric, READINESS_SCALE_MIN + completeLevelsCount, progress)
-  ) {
-    completeLevelsCount += 1;
-  }
-  return {
-    completeLevelsCount,
-    totalLevels,
-    percent: Math.round((completeLevelsCount / totalLevels) * 100),
-  };
-}
 
 export default function ReadinessLevelPage() {
   const {
@@ -88,9 +67,7 @@ export default function ReadinessLevelPage() {
       setPreviewLevel(
         levelOrMin(readinessLevels?.[CURRENT_YEAR]?.[guideMetric]),
       );
-      if (
-        getMetricProgress(READINESS_METRICS[0], guideProgress).percent === 0
-      ) {
+      if (getReadinessItemCounts(readinessLevels, guideProgress).completed === 0) {
         setIsGuideHelpOpen(true);
       }
     }
@@ -187,11 +164,9 @@ export default function ReadinessLevelPage() {
 
   const guide = READINESS_LEVEL_GUIDE[guideMetric];
   const stage = getStageForLevel(guideMetric, previewLevel);
-  const {
-    completeLevelsCount,
-    totalLevels,
-    percent: completionPercent,
-  } = getMetricProgress(guideMetric, guideProgress);
+  const currentLevel = levelOrMin(readinessLevels?.[CURRENT_YEAR]?.[guideMetric]);
+  const { completed: readinessItemsCompleted, total: readinessItemsTotal } =
+    getReadinessItemCounts(readinessLevels, guideProgress);
 
   return (
     <div className="page">
@@ -255,13 +230,13 @@ export default function ReadinessLevelPage() {
             <h3 className="level-guide__title">{guide.label}</h3>
             <p className="level-guide__intro">{guide.intro}</p>
 
-            <Thermometer value={previewLevel} onChange={handleLevelChange} />
-
-            <LevelCompletionBar
-              percent={completionPercent}
-              completed={completeLevelsCount}
-              total={totalLevels}
+            <Thermometer
+              value={previewLevel}
+              onChange={handleLevelChange}
+              markedLevel={currentLevel}
             />
+
+            <KthProgressBar completed={readinessItemsCompleted} total={readinessItemsTotal} />
 
             {/* Keyed by metric + level so every level change replays the entrance animation. */}
             <div
@@ -381,10 +356,11 @@ export default function ReadinessLevelPage() {
             <strong>Not applicable</strong> to track where you stand.
           </p>
           <p>
-            The progress bar fills one level at a time, starting from level 1 —
-            it only advances once every requirement of a level is marked{" "}
-            <strong>Achieved</strong> or <strong>Not applicable</strong>, in
-            order. <strong>Not achieved</strong> doesn't move it forward.
+            The 🚩 above the level selector marks your metric's current
+            official score — it stays there even while you browse other
+            levels. The bar below the selector is your overall progress: how
+            much of the readiness table and the level guide, across every
+            metric, you've filled in so far.
           </p>
           <p>
             Once you have answered every requirement of a level, the guide moves

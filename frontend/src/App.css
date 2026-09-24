@@ -695,9 +695,12 @@
   display: flex;
   gap: 4px;
   width: 100%;
+  /* Room for .thermometer__flag, which sits above a step. */
+  margin-top: 22px;
 }
 
 .thermometer__step {
+  position: relative;
   flex: 1;
   height: 40px;
   border: 2px solid transparent;
@@ -710,6 +713,15 @@
     opacity 0.12s ease,
     transform 0.12s ease,
     border-color 0.12s ease;
+}
+
+.thermometer__flag {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 15px;
+  line-height: 1;
 }
 
 .thermometer__step:first-child {
@@ -734,6 +746,32 @@
 
 .thermometer.is-read-only .thermometer__step {
   cursor: default;
+}
+
+/* Overall KTH - IRL completion — same look as .maturity-progress, minus the
+   sticky positioning (this one sits in a much shorter panel). */
+.kth-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kth-progress__bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.kth-progress__fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+
+.kth-progress__label {
+  font-size: 12px;
+  color: var(--text);
 }
 
 /* ---------- Tables ---------- */

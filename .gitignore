@@ -15,6 +15,12 @@ dist-ssr
 # Environment variables (per-package .env.example files stay tracked)
 .env
 
+# Cloud Run deploy env vars (--env-vars-file — see backend/README.md). Holds
+# non-secret config, but also admin emails we don't want versioned; real
+# secrets (JWT_SECRET, GOOGLE_CLIENT_SECRET) come from Secret Manager instead
+# and never go in this file.
+backend/env-vars.yaml
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

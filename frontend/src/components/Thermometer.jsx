@@ -15,7 +15,10 @@ function textColorForLevel(level) {
   return level >= 4 && level <= 6 ? "#1a1a1a" : "#fff";
 }
 
-export default function Thermometer({ value, onChange, readOnly = false }) {
+// `markedLevel`, when given, pins a small flag above that step — the
+// company's actual current level — regardless of which step `value` is
+// previewing (they can differ: browsing the guide doesn't move the flag).
+export default function Thermometer({ value, onChange, readOnly = false, markedLevel }) {
   return (
     <div
       className={`thermometer ${readOnly ? "is-read-only" : ""}`}
@@ -31,6 +34,11 @@ export default function Thermometer({ value, onChange, readOnly = false }) {
           onClick={readOnly ? undefined : () => onChange(level)}
           disabled={readOnly}
         >
+          {level === markedLevel && (
+            <span className="thermometer__flag" aria-hidden="true" title="Current level">
+              🚩
+            </span>
+          )}
           {level}
         </button>
       ))}

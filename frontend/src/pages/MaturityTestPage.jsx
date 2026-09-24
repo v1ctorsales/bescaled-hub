@@ -32,6 +32,8 @@ export default function MaturityTestPage() {
     maturityTouched,
     updateMaturityAnswer,
     submitMaturityTest,
+    maturitySubmitting,
+    maturitySubmitError,
     loading,
   } = useCompanyData();
   const [testStarted, setTestStarted] = useState(false);
@@ -248,9 +250,30 @@ export default function MaturityTestPage() {
                 );
               })}
 
-              <button className="btn-primary" onClick={submitMaturityTest} disabled={!allReviewed}>
-                {maturityTestFilled ? "Save changes" : "Submit answers"}
-              </button>
+              <div className="submit-block">
+                {maturitySubmitError ? (
+                  <p className="submit-block__status is-error" role="alert">
+                    Couldn't submit your answers. Try again.
+                  </p>
+                ) : (
+                  maturityTestFilled && (
+                    <p className="submit-block__status">
+                      ✓ All your answers are submitted.
+                    </p>
+                  )
+                )}
+                <button
+                  className="btn-primary"
+                  onClick={submitMaturityTest}
+                  disabled={!allReviewed || maturitySubmitting}
+                >
+                  {maturitySubmitting
+                    ? "Submitting…"
+                    : maturityTestFilled
+                      ? "Save changes"
+                      : "Submit answers"}
+                </button>
+              </div>
             </div>
           )}
         </section>

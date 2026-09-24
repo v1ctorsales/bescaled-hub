@@ -10,17 +10,6 @@ export function isLevelComplete(metric, level, progress) {
   return bullets.every((_, index) => Boolean(progress[`${metric}:${level}:${index}`]));
 }
 
-// True when every bullet of one level is "achieved" or "not-applicable" — what
-// moves the level guide's "You are here" progress bar forward. "Not achieved"
-// is an answer, but it doesn't clear the level.
-export function isLevelCleared(metric, level, progress) {
-  const bullets = READINESS_LEVEL_GUIDE[metric]?.stages?.[level]?.bullets ?? [];
-  return bullets.every((_, index) => {
-    const status = progress[`${metric}:${level}:${index}`];
-    return status === "achieved" || status === "not-applicable";
-  });
-}
-
 // True when every bullet of one level is marked "achieved" (not just answered).
 export function isLevelAchieved(metric, level, progress) {
   const bullets = READINESS_LEVEL_GUIDE[metric]?.stages?.[level]?.bullets ?? [];
@@ -55,4 +44,34 @@ export function getReadinessCompletionPercent(readinessLevels, guideProgress) {
   const guidePercent = (completeSections / READINESS_METRICS.length) * 50;
 
   return chartPercent + guidePercent;
+}
+
+// Total items across the whole Innovation Readiness Level assessment — the
+// readiness table's cells plus every bullet in the level guide, across all 6
+// metrics — counted the same way the AI Maturity Test's progress bar counts
+// its ratings (see TOTAL_MATURITY_ITEMS/maturityTouched). `completed` counts
+// filled table cells (value > 0) plus guide bullets with any status set.
+export function getReadinessItemCounts(readinessLevels, guideProgress) {
+  const totalCells = READINESS_YEARS.length * READINESS_METRICS.length;
+  const filledCells = READINESS_YEARS.reduce(
+    (count, year) =>
+      count + READINESS_METRICS.filter((metric) => (readinessLevels[year]?.[metric] ?? 0) > 0).length,
+    0,
+  );
+
+  const totalBullets = READINESS_METRICS.reduce(
+    (sum, metric) =>
+      sum +
+      Object.values(READINESS_LEVEL_GUIDE[metric]?.stages ?? {}).reduce(
+        (n, stage) => n + stage.bullets.length,
+        0,
+      ),
+    0,
+  );
+  const answeredBullets = Object.values(guideProgress).filter(Boolean).length;
+
+  return {
+    completed: filledCells + answeredBullets,
+    total: totalCells + totalBullets,
+  };
 }
