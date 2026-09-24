@@ -30,8 +30,9 @@ COPY . .
 RUN chmod +x start.sh
 
 # Runs as the `node` user (uid 1000), already present in the base image,
-# instead of root. It needs to create/write backend/prisma/data.db (the
-# SQLite file — recreated from scratch on every start, see start.sh).
+# instead of root — the database itself is remote (Postgres/Supabase, see
+# backend/README.md), so this is just standard least-privilege, not needed
+# for any local file the app writes.
 RUN chown -R node:node /app
 USER node
 

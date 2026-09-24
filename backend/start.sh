@@ -1,10 +1,15 @@
 #!/bin/sh
-# Container entrypoint. Runs on every start (Cloud Run gives each instance a
-# fresh, empty SQLite file — see backend/README.md — so this has to succeed
-# from scratch every time, not just on the first deploy):
-#   1. apply migrations, creating prisma/data.db if it doesn't exist yet
-#   2. seed it (admins + sample companies; idempotent, see prisma/seed.js)
+# Container entrypoint, run on every start:
+#   1. apply any pending migrations (against DIRECT_URL)
+#   2. seed (admins from ADMIN_EMAILS + sample companies; idempotent upserts,
+#      see prisma/seed.js — safe to run against a database that's already
+#      been seeded, but note it re-applies the 6 sample companies' data
+#      every time, so a company edited since the last deploy gets reset)
 #   3. start the API
+#
+# The database (Postgres/Supabase) is persistent — see backend/README.md —
+# unlike the old SQLite setup this used to run against, where every start
+# began from an empty file and re-seeding was harmless by construction.
 set -e
 
 npx prisma migrate deploy
