@@ -36,7 +36,16 @@ Copy the `.env.example` in each package to `.env` and adjust if needed:
 - `frontend/.env.example` → `VITE_API_BASE_URL` (where the frontend expects the API) and `VITE_GOOGLE_CLIENT_ID`.
 - `backend/.env.example` → `PORT`, `FRONTEND_ORIGIN` (for CORS), `DATABASE_URL`/`DIRECT_URL` (Postgres/Supabase), `GOOGLE_CLIENT_ID`, `JWT_SECRET` and `ADMIN_EMAILS`.
 
-## Deploying the frontend (Vercel)
+## Deploying
 
-Set the project's **Root Directory** to `frontend/` in the Vercel dashboard.
-The backend isn't deployed anywhere yet — that's a separate future step.
+- **Frontend (Vercel):** set the project's **Root Directory** to `frontend/`.
+- **Backend (Cloud Run):** see "Deploy (Cloud Run)" in `backend/README.md`.
+
+In production the browser never calls the Cloud Run URL directly —
+`frontend/vercel.json` rewrites `/api/*` to the backend server-side (Vercel →
+Cloud Run), so the API is same-site with the frontend from the browser's
+point of view. This is what lets the session cookie use `SameSite=Lax`
+everywhere instead of the cross-site `SameSite=None`, which was causing
+intermittent login failures (some browsers' cross-site tracking protections
+could silently drop that cookie). See "Proxy (Vercel rewrite)" in
+`backend/README.md` for the full explanation.

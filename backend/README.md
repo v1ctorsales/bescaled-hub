@@ -65,8 +65,41 @@ Admins are managed in the `AdminEmail` table (seeded in `prisma/seed.js`); compa
 emails are edited in the admin UI and stored lowercase.
 
 `GOOGLE_CLIENT_SECRET` is not used (no authorization-code exchange). Never commit it or `JWT_SECRET`.
-In production with the frontend on a different site, the cookie needs `SameSite=None; Secure`
-(or serve both under one site) — revisit `src/utils/session.js` when deploying.
+
+## Proxy (Vercel rewrite)
+
+The frontend never calls this backend's Cloud Run URL directly from the
+browser. `frontend/vercel.json` rewrites `/api/*` on the frontend's own domain
+to the Cloud Run backend, server-side (Vercel → Cloud Run, no CORS involved —
+the browser never sees the Cloud Run domain at all). As far as the browser is
+concerned, the API is same-site with the page, which is what lets the session
+cookie use `SameSite=Lax` in every environment instead of `SameSite=None`.
+
+This exists because `SameSite=None` (required for a real cross-site cookie,
+frontend on `vercel.app` calling a backend on `run.app`) was causing
+intermittent login failures in production: some browsers' cross-site tracking
+protections (Safari ITP most notably, but not only there) can silently drop
+or block that kind of cookie in ways that aren't fully predictable — a login
+would succeed, then the very next request would come back `401` seconds
+later, non-deterministically. Routing through a same-site proxy removes the
+whole class of problem instead of working around it browser by browser.
+
+Two things this changes:
+
+- The frontend calls a relative path (`/api`) in production, not the Cloud
+  Run URL — see `VITE_API_BASE_URL` in `frontend/.env.example`.
+- `frontend/vercel.json`'s rewrite carries an
+  `x-vercel-enable-rewrite-caching: 0` header on `/api/*`. Vercel caches
+  rewritten responses that carry upstream cache headers by default; this API
+  is entirely session-scoped and per-company, so caching any of it — even by
+  accident — could leak one user's data to another. Keep that header even if
+  the backend never sends explicit cache headers today.
+
+`backend/src/app.js`'s CORS (`cors({ origin: FRONTEND_ORIGIN, credentials:
+true })`) is untouched and still relevant for local dev (frontend calls the
+backend directly there) and for manual testing (curl/Postman) — it's just no
+longer what real browser traffic in production relies on, since that traffic
+now looks like Vercel calling Cloud Run server-to-server.
 
 ## Layout
 
