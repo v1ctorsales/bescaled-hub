@@ -38,3 +38,6 @@ backend/prisma/*.db-journal
 
 backend/prisma/*.db-wal
 backend/prisma/*.db-shm
+
+# Database backups (pg_dump output, etc.) — contain real company data, never commit
+*.sql

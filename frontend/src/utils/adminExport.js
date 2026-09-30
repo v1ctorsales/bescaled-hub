@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { downloadXlsx, downloadXlsxSheets } from "./export";
+import { downloadXlsx, downloadXlsxSheets, styleMaturitySheet } from "./export";
 import { renderRadarChartImage } from "./radarCanvas";
 import { READINESS_METRICS, READINESS_METRIC_LABELS, READINESS_YEARS } from "../config";
 import {
@@ -151,7 +151,7 @@ export function exportCompanyXlsx(company) {
       });
     });
   });
-  sheets.push({ name: "AI Maturity", rows: maturityRows });
+  sheets.push({ name: "AI Maturity", rows: maturityRows, styleRows: styleMaturitySheet });
 
   downloadXlsxSheets(sheets, `${company.name.replace(/\s+/g, "_")}.xlsx`);
 }

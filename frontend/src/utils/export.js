@@ -12,9 +12,9 @@ import { maturityDimensions, MATURITY_STAGES } from "../data/maturityDimensions"
 // Small helpers to let export buttons actually produce a downloadable file
 // instead of being pure placeholders.
 
-export async function downloadXlsx(rows, filename, sheetName = "Sheet1") {
+export async function downloadXlsx(rows, filename, sheetName = "Sheet1", styleRows) {
   if (!rows.length) return;
-  await downloadXlsxSheets([{ name: sheetName, rows }], filename);
+  await downloadXlsxSheets([{ name: sheetName, rows, styleRows }], filename);
 }
 
 // Excel sheet names can't be empty, over 31 chars, or contain \ / ? * [ ] :
@@ -24,22 +24,26 @@ function sanitizeSheetName(name) {
   return String(name).replace(/[\\/?*[\]:]/g, "-").slice(0, 31) || "Sheet";
 }
 
-// sheets: [{ name, rows, image? }] — one worksheet per entry, skipping any
-// with no rows. Each sheet's columns are derived from its own rows' keys.
-// `image`, when given, is a PNG data URL (as returned by
+// sheets: [{ name, rows, image?, styleRows? }] — one worksheet per entry,
+// skipping any with no rows. Each sheet's columns are derived from its own
+// rows' keys. `image`, when given, is a PNG data URL (as returned by
 // utils/radarCanvas.js) placed a couple of rows below the table; `size` is
-// its square side in pixels (defaults to 320).
+// its square side in pixels (defaults to 320). `styleRows(sheet, rows)`, when
+// given, runs right after the rows are written, for per-sheet cell styling
+// (see styleMaturitySheet below).
 export async function downloadXlsxSheets(sheets, filename) {
   const nonEmptySheets = sheets.filter((s) => s.rows.length);
   if (!nonEmptySheets.length) return;
 
   const workbook = new ExcelJS.Workbook();
-  nonEmptySheets.forEach(({ name, rows, image }) => {
+  nonEmptySheets.forEach(({ name, rows, image, styleRows }) => {
     const sheet = workbook.addWorksheet(sanitizeSheetName(name));
     const headers = Object.keys(rows[0]);
     sheet.columns = headers.map((header) => ({ header, key: header, width: 28 }));
     sheet.getRow(1).font = { bold: true };
     sheet.addRows(rows);
+
+    if (styleRows) styleRows(sheet, rows);
 
     if (image) {
       const size = image.size ?? 320;
@@ -142,6 +146,39 @@ export function exportReadinessPdf(companyName, readinessLevels) {
 // admin's exportCompanyXlsx/Pdf in adminExport.js, which also bundle the
 // Innovation Readiness Level.
 
+// Fixed background per `stage` value (not row parity — see MATURITY_STAGES
+// for the exact label strings this must match) and a bold black separator
+// under the last row of each `dimension` block. Shared by exportMaturityXlsx
+// here and adminExport.js's exportCompanyXlsx, since both build the same
+// { dimension, stage, score, comment, flagged } rows.
+const MATURITY_STAGE_FILL = {
+  Conceptual: "FFEEECE1",
+  Implementation: "FFDDD9C3",
+  "Evaluation & Reflection": "FFF2F2F2",
+  "Ready to Monitor Practices": "FFD8D8D8",
+  "Monitoring & Sharing": null, // no fill
+};
+const DIMENSION_DIVIDER_BORDER = { style: "medium", color: { argb: "FF000000" } };
+
+export function styleMaturitySheet(sheet, rows) {
+  rows.forEach((row, index) => {
+    const fillColor = MATURITY_STAGE_FILL[row.stage];
+    // Last row of a dimension block: the next row (if any) starts a new one.
+    const isDimensionEnd = rows[index + 1] && rows[index + 1].dimension !== row.dimension;
+    if (!fillColor && !isDimensionEnd) return;
+
+    // +1 for the header row, +1 because ExcelJS rows are 1-indexed.
+    sheet.getRow(index + 2).eachCell({ includeEmpty: true }, (cell) => {
+      if (fillColor) {
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: fillColor } };
+      }
+      if (isDimensionEnd) {
+        cell.border = { ...cell.border, bottom: DIMENSION_DIVIDER_BORDER };
+      }
+    });
+  });
+}
+
 export async function exportMaturityXlsx(companyName, maturityAnswers) {
   const rows = [];
   maturityDimensions.forEach((dimension) => {
@@ -160,6 +197,7 @@ export async function exportMaturityXlsx(companyName, maturityAnswers) {
     rows,
     `${companyName.replace(/\s+/g, "_")}_ai_maturity.xlsx`,
     "AI Maturity",
+    styleMaturitySheet,
   );
 }
 

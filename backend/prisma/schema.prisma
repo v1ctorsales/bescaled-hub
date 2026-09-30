@@ -1,4 +1,4 @@
-// BeScaled Hub data model (Postgres, hosted on Supabase, via Prisma).
+// BeScaled Hub data model (Postgres via Prisma).
 //
 // Mirrors the company record the API has always returned:
 //   { id, name, contactEmail, subscribed, filledReadinessForm, filledMaturityTest,
@@ -10,13 +10,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// A single direct connection — no pooler in front (that was Supabase-specific,
+// for the url/directUrl split that used to be here; see git history). A
+// self-hosted Postgres (VPS, docker-compose's `db` service) is a plain
+// connection, so Prisma Migrate and the running app both just use DATABASE_URL.
 datasource db {
-  provider  = "postgresql"
-  // Pooled (Supavisor, port 6543) — what the running app uses.
-  url       = env("DATABASE_URL")
-  // Direct (port 5432) — Prisma Migrate needs this; the pooler doesn't
-  // support the session-level features migrations rely on.
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Company {
