@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://bescale-hub-backend-202733425480.europe-west1.run.app/api/:path*"
+      "destination": "https://uvn-76-252.tll01.zonevs.eu/api/:path*"
     },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
