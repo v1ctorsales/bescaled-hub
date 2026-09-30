@@ -30,7 +30,33 @@ services:
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
       ADMIN_EMAILS: ${ADMIN_EMAILS}
     ports:
-      - "3001:8080"
+      # Bound to localhost only — the public, HTTPS entry point is Caddy
+      # (below); this stays open just for debugging from inside the VPS
+      # itself (e.g. `curl http://localhost:3001`).
+      - "127.0.0.1:3001:8080"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      # The public hostname to serve and get a cert for. Currently the
+      # host zone.ee provided; swap to the university's domain later by
+      # changing this one value (in .env) — see Caddyfile.
+      SITE_DOMAIN: ${SITE_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      # Persist issued certs/keys and Caddy's internal state across
+      # restarts — without this, every `docker compose up` would re-request
+      # from Let's Encrypt, which is rate-limited.
+      - caddy_data:/data
+      - caddy_config:/config
 
 volumes:
   pgdata:
+  caddy_data:
+  caddy_config:

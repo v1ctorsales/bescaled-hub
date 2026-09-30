@@ -39,7 +39,10 @@ Copy the `.env.example` in each package to `.env` and adjust if needed:
 ## Deploying
 
 - **Frontend (Vercel):** set the project's **Root Directory** to `frontend/`.
-- **Backend (Cloud Run):** see "Deploy (Cloud Run)" in `backend/README.md`.
+- **Backend (Cloud Run):** see "Deploy (Cloud Run)" in `backend/README.md`. This
+  is the current, live production backend.
+- **Backend (VPS, in progress):** a self-hosted alternative being prepared —
+  see `VPS-DEPLOY.md`. Not cut over yet.
 
 In production the browser never calls the Cloud Run URL directly —
 `frontend/vercel.json` rewrites `/api/*` to the backend server-side (Vercel →
