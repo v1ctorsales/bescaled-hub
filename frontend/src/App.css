@@ -1094,17 +1094,22 @@
 
 /* Scoped to the level guide's help button only (ReadinessLevelPage), not
    .icon-toggle-btn generally — it sits next to the Export XLSX/PDF buttons
-   and must match their height exactly. `height: auto` + `align-self:
-   stretch` makes the browser compute that height itself (the toolbar row's
-   flex default already stretches items to the row's height — this item just
-   needed its own fixed height cleared to let that apply); `aspect-ratio`
-   then makes width track that same height, for a perfect square whatever
-   the export buttons' actual height turns out to be. */
+   and must match their height exactly.
+   (A flex `align-self: stretch` + `aspect-ratio: 1/1` combo was tried here
+   first: stretch correctly grows the cross axis (height) to match the row,
+   but in a row-direction flex item aspect-ratio can't pull the main axis
+   (width) from that stretched cross size — width stays content/icon-sized,
+   giving a tall rectangle instead of a square. Explicit matching values
+   avoid that.)
+   43px = exactly .btn-secondary/.btn-primary's own height: line-height
+   21px (14px font-size × the 1.5 ratio inherited from :root — a ratio, not
+   the `normal` keyword, so this is exact, not estimated) + 20px padding
+   (10px top/bottom) + 2px border (1px top/bottom). Width set to the same
+   value for a perfect square. If that padding/font-size ever changes,
+   recompute this. */
 .icon-toggle-btn.level-guide-help-btn {
-  width: auto;
-  height: auto;
-  align-self: stretch;
-  aspect-ratio: 1 / 1;
+  width: 43px;
+  height: 43px;
 }
 
 .icon-toggle-btn:hover {
@@ -1314,10 +1319,10 @@
   background: var(--surface);
   border-radius: 14px;
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 20px 24px 24px;
+  padding: 12px 24px 12px;
   box-shadow: var(--shadow);
 }
 
@@ -1343,7 +1348,7 @@
 }
 
 .level-guide-help__credit-logo {
-  height: 36px;
+  height: 84px;
   width: auto;
   flex-shrink: 0;
 }
