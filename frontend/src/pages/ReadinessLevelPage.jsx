@@ -9,6 +9,7 @@ import Thermometer from "../components/Thermometer";
 import KthProgressBar from "../components/KthProgressBar";
 import Modal from "../components/Modal";
 import HelpIcon from "../components/icons/HelpIcon";
+import kthInnovationLogo from "../assets/kth-innovation-logo.png";
 import {
   READINESS_YEARS,
   READINESS_METRICS,
@@ -179,7 +180,7 @@ export default function ReadinessLevelPage() {
           <div className="page-toolbar__actions">
             <button
               type="button"
-              className="icon-toggle-btn"
+              className="icon-toggle-btn level-guide-help-btn"
               aria-label="About the level guide"
               aria-haspopup="dialog"
               onClick={() => setIsGuideHelpOpen(true)}
@@ -339,6 +340,17 @@ export default function ReadinessLevelPage() {
           title="About the level guide"
           onClose={() => setIsGuideHelpOpen(false)}
         >
+          <div className="level-guide-help__credit">
+            <img
+              src={kthInnovationLogo}
+              alt="KTH Innovation"
+              className="level-guide-help__credit-logo"
+            />
+            <p className="level-guide-help__credit-text">
+              The KTH Innovation Readiness Level™ Model is developed by KTH
+              Innovation.
+            </p>
+          </div>
           <p>
             The numbers 1–9 match the KTH Innovation Readiness Level (IRL) scale
             for the metric you've selected above.

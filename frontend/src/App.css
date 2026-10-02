@@ -1092,6 +1092,21 @@
     transform 0.1s ease;
 }
 
+/* Scoped to the level guide's help button only (ReadinessLevelPage), not
+   .icon-toggle-btn generally — it sits next to the Export XLSX/PDF buttons
+   and must match their height exactly. `height: auto` + `align-self:
+   stretch` makes the browser compute that height itself (the toolbar row's
+   flex default already stretches items to the row's height — this item just
+   needed its own fixed height cleared to let that apply); `aspect-ratio`
+   then makes width track that same height, for a perfect square whatever
+   the export buttons' actual height turns out to be. */
+.icon-toggle-btn.level-guide-help-btn {
+  width: auto;
+  height: auto;
+  align-self: stretch;
+  aspect-ratio: 1 / 1;
+}
+
 .icon-toggle-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
@@ -1316,6 +1331,27 @@
 
 .modal__header h3 {
   font-size: 16px;
+}
+
+/* Attribution at the top of "About the level guide" — the logo + the model's
+   credit line, discreet (small, muted), ahead of the modal's own content. */
+.level-guide-help__credit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.level-guide-help__credit-logo {
+  height: 36px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.level-guide-help__credit-text {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 /* ---------- Company settings modal ---------- */
