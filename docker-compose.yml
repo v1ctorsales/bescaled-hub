@@ -35,11 +35,27 @@ services:
       # itself (e.g. `curl http://localhost:3001`).
       - "127.0.0.1:3001:8080"
 
+  # Builds the frontend's static files and copies them into frontend_dist for
+  # Caddy to serve — doesn't stay running, just builds, copies, and exits.
+  frontend-build:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.build
+      args:
+        # Reused as-is — not a separate variable. See .env.example.
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+    volumes:
+      - frontend_dist:/srv/output
+    command: sh -c "cp -r /app/dist/* /srv/output/"
+
   caddy:
     image: caddy:2
     restart: unless-stopped
     depends_on:
-      - app
+      app:
+        condition: service_started
+      frontend-build:
+        condition: service_completed_successfully
     environment:
       # The public hostname to serve and get a cert for. Currently the
       # host zone.ee provided; swap to the university's domain later by
@@ -55,8 +71,10 @@ services:
       # from Let's Encrypt, which is rate-limited.
       - caddy_data:/data
       - caddy_config:/config
+      - frontend_dist:/srv/frontend:ro
 
 volumes:
   pgdata:
   caddy_data:
   caddy_config:
+  frontend_dist:

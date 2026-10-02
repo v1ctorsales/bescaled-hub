@@ -1,3 +1,17 @@
 {$SITE_DOMAIN} {
 	reverse_proxy app:8080
 }
+
+# The university's official domain — serves the frontend's static build and
+# proxies /api/* to the backend. Same-origin from the browser's point of
+# view, so no CORS/rewrite trick is needed here (unlike the Vercel setup).
+bescaled-batches.tlu.ee {
+	handle /api/* {
+		reverse_proxy app:8080
+	}
+	handle {
+		root * /srv/frontend
+		try_files {path} /index.html
+		file_server
+	}
+}
