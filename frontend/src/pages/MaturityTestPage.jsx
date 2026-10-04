@@ -8,6 +8,25 @@ import CommentIcon from "../components/icons/CommentIcon";
 import HelpIcon from "../components/icons/HelpIcon";
 import { maturityDimensions, MATURITY_STAGES, TOTAL_MATURITY_ITEMS } from "../data/maturityDimensions";
 import { exportMaturityXlsx, exportMaturityPdf } from "../utils/export";
+import ccIconCc from "../assets/cc-icons/cc.svg";
+import ccIconBy from "../assets/cc-icons/by.svg";
+import ccIconNc from "../assets/cc-icons/nc.svg";
+import ccIconNd from "../assets/cc-icons/nd.svg";
+
+// The RAI maturity model's author/license credit, required by the project
+// advisor. Kept as named constants so the author link is easy to swap later.
+const RAI_AUTHOR_NAME = "Marwa Soudi";
+// TODO: after Marwa's PhD defense, replace this mailto with a link to her thesis
+const RAI_AUTHOR_LINK = "mailto:marwas@tlu.ee";
+const RAI_LICENSE_URL = "https://creativecommons.org/licenses/by-nc-nd/4.0/";
+const RAI_LICENSE_LABEL =
+  "Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International";
+const CC_ICONS = [
+  { src: ccIconCc, alt: "" },
+  { src: ccIconBy, alt: "" },
+  { src: ccIconNc, alt: "" },
+  { src: ccIconNd, alt: "" },
+];
 
 // Comment boxes start open only where a comment already exists (review
 // mode) — most stages get just a score, so the box stays tucked away
@@ -129,6 +148,17 @@ export default function MaturityTestPage() {
               <button className="btn-primary" onClick={() => setTestStarted(true)}>
                 Start test
               </button>
+
+              <p className="maturity-test__license">
+                RAI maturity © 2026 by{" "}
+                <a href={RAI_AUTHOR_LINK}>{RAI_AUTHOR_NAME}</a> is licensed under{" "}
+                <a href={RAI_LICENSE_URL} target="_blank" rel="noopener noreferrer">
+                  {RAI_LICENSE_LABEL}
+                </a>
+                {CC_ICONS.map(({ src, alt }, index) => (
+                  <img key={index} src={src} alt={alt} className="cc-icon" />
+                ))}
+              </p>
             </div>
           )}
 
