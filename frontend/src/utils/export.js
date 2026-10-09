@@ -179,6 +179,95 @@ export function styleMaturitySheet(sheet, rows) {
   });
 }
 
+// --- AI Maturity: averages summary ---------------------------------------
+// A labelled block to the right of the data table (which occupies A-E),
+// leaving F as a spacer: average score per dimension, then per stage.
+const SUMMARY_LABEL_COL = 7; // G
+const SUMMARY_VALUE_COL = 8; // H
+
+// Mirrors what the AVERAGEIF formulas written below compute, so the cell can
+// carry a cached result for viewers that don't recalculate (email previews,
+// Google Sheets imports...). Non-numeric scores — the "Not answered" string
+// rows use — are skipped rather than counted as zero, exactly like
+// AVERAGEIF ignores text. Returns "—" for a group with no answers at all,
+// matching the formula's IFERROR fallback instead of #DIV/0!.
+function averageScore(rows, key, value) {
+  const scores = rows
+    .filter((row) => row[key] === value && typeof row.score === "number")
+    .map((row) => row.score);
+  if (!scores.length) return "—";
+  return scores.reduce((sum, score) => sum + score, 0) / scores.length;
+}
+
+// Writes one titled block (e.g. "Average by dimension") and returns the last
+// row it used, so the next block can start below it.
+function writeSummaryBlock(sheet, { startRow, title, labels, rows, matchKey, criteriaRange, scoreRange, fills }) {
+  const titleCell = sheet.getCell(startRow, SUMMARY_LABEL_COL);
+  titleCell.value = title;
+  titleCell.font = { bold: true };
+
+  labels.forEach((label, index) => {
+    const rowNumber = startRow + 1 + index;
+    const labelCell = sheet.getCell(rowNumber, SUMMARY_LABEL_COL);
+    const valueCell = sheet.getCell(rowNumber, SUMMARY_VALUE_COL);
+
+    labelCell.value = label;
+    // Criteria is the label cell itself, so the formula stays readable and
+    // auditable when someone clicks it in Excel.
+    valueCell.value = {
+      formula: `IFERROR(AVERAGEIF(${criteriaRange},${labelCell.address},${scoreRange}),"—")`,
+      result: averageScore(rows, matchKey, label),
+    };
+    // Display-only rounding — the underlying value keeps full precision.
+    valueCell.numFmt = "0.00";
+    valueCell.alignment = { horizontal: "right" };
+
+    const fill = fills?.[label];
+    if (fill) {
+      [labelCell, valueCell].forEach((cell) => {
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: fill } };
+      });
+    }
+  });
+
+  return startRow + labels.length;
+}
+
+// Call AFTER styleMaturitySheet: that one walks each data row with
+// `includeEmpty`, so it must run while those rows still end at column E —
+// otherwise the table's stage fills and dimension borders would bleed into
+// this block.
+export function addMaturitySummary(sheet, rows) {
+  const lastDataRow = rows.length + 1; // +1 for the header row
+  const dimensionRange = `$A$2:$A$${lastDataRow}`;
+  const stageRange = `$B$2:$B$${lastDataRow}`;
+  const scoreRange = `$C$2:$C$${lastDataRow}`;
+
+  sheet.getColumn(SUMMARY_LABEL_COL).width = 32;
+  sheet.getColumn(SUMMARY_VALUE_COL).width = 14;
+
+  const lastDimensionRow = writeSummaryBlock(sheet, {
+    startRow: 1,
+    title: "Average by dimension",
+    labels: maturityDimensions.map((dimension) => dimension.title),
+    rows,
+    matchKey: "dimension",
+    criteriaRange: dimensionRange,
+    scoreRange,
+  });
+
+  writeSummaryBlock(sheet, {
+    startRow: lastDimensionRow + 2, // one blank row between the two blocks
+    title: "Average by stage",
+    labels: MATURITY_STAGES.map((stage) => stage.label),
+    rows,
+    matchKey: "stage",
+    criteriaRange: stageRange,
+    scoreRange,
+    fills: MATURITY_STAGE_FILL,
+  });
+}
+
 export async function exportMaturityXlsx(companyName, maturityAnswers) {
   const rows = [];
   maturityDimensions.forEach((dimension) => {

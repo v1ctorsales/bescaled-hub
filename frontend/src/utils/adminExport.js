@@ -1,6 +1,11 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { downloadXlsx, downloadXlsxSheets, styleMaturitySheet } from "./export";
+import {
+  downloadXlsx,
+  downloadXlsxSheets,
+  styleMaturitySheet,
+  addMaturitySummary,
+} from "./export";
 import { renderRadarChartImage } from "./radarCanvas";
 import { READINESS_METRICS, READINESS_METRIC_LABELS, READINESS_YEARS } from "../config";
 import {
@@ -115,6 +120,40 @@ function getGuideRows(company) {
   return rows;
 }
 
+// The company description (Company.settingsDescription on the backend,
+// `settings.description` over the API — the text admins write in the company
+// settings modal) can run long, so the Info sheet's value column gets wrapped
+// text and a row tall enough to read it without clicking into the cell.
+const DESCRIPTION_FIELD = "Description";
+const INFO_VALUE_COL = 2;
+const INFO_VALUE_COL_WIDTH = 70;
+const INFO_LINE_HEIGHT = 15; // points, roughly one wrapped line
+const INFO_MAX_ROW_HEIGHT = 150;
+
+function wrappedRowHeight(text) {
+  const lines = String(text)
+    .split("\n")
+    .reduce(
+      (total, line) => total + Math.max(1, Math.ceil(line.length / INFO_VALUE_COL_WIDTH)),
+      0,
+    );
+  return Math.min(INFO_MAX_ROW_HEIGHT, Math.max(1, lines) * INFO_LINE_HEIGHT);
+}
+
+function styleInfoSheet(sheet, rows) {
+  sheet.getColumn(INFO_VALUE_COL).width = INFO_VALUE_COL_WIDTH;
+
+  rows.forEach((row, index) => {
+    if (row.field !== DESCRIPTION_FIELD) return;
+    const rowNumber = index + 2; // +1 for the header row, +1 for 1-indexing
+    sheet.getCell(rowNumber, INFO_VALUE_COL).alignment = {
+      wrapText: true,
+      vertical: "top",
+    };
+    sheet.getRow(rowNumber).height = wrappedRowHeight(row.value);
+  });
+}
+
 export function exportCompanyXlsx(company) {
   const sheets = [
     {
@@ -123,7 +162,11 @@ export function exportCompanyXlsx(company) {
         { field: "Name", value: company.name },
         { field: "Contact email", value: company.contactEmail },
         { field: "Subscribed", value: company.subscribed },
+        // "—" for an empty description, same as the PDF export does for
+        // missing contact emails and comments.
+        { field: DESCRIPTION_FIELD, value: company.settings?.description || "—" },
       ],
+      styleRows: styleInfoSheet,
     },
   ];
 
@@ -151,7 +194,15 @@ export function exportCompanyXlsx(company) {
       });
     });
   });
-  sheets.push({ name: "AI Maturity", rows: maturityRows, styleRows: styleMaturitySheet });
+  sheets.push({
+    name: "AI Maturity",
+    rows: maturityRows,
+    // Order matters — see addMaturitySummary's note.
+    styleRows: (sheet, rows) => {
+      styleMaturitySheet(sheet, rows);
+      addMaturitySummary(sheet, rows);
+    },
+  });
 
   downloadXlsxSheets(sheets, `${company.name.replace(/\s+/g, "_")}.xlsx`);
 }
