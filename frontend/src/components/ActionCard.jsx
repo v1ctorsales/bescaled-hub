@@ -23,7 +23,8 @@ export default function ActionCard({ to, title, percent }) {
         <div className="action-card__progress-bar">
           <div className="action-card__progress-fill" style={{ width: `${clampedPercent}%` }} />
         </div>
-        <span className="action-card__progress-label">{Math.round(clampedPercent)}%</span>
+        {/* Floored so an unfinished assessment never reads "100%". */}
+        <span className="action-card__progress-label">{Math.floor(clampedPercent)}%</span>
       </div>
 
       <div className="action-card__action">

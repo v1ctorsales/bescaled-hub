@@ -20,7 +20,7 @@ export default function UserDashboard() {
     );
   }
 
-  // Saved progress only: 50% readiness chart + 50% level-guide sections (see utils/readinessProgress.js).
+  // Saved progress only — same item counts as the level guide's progress bar (see utils/readinessProgress.js).
   const readinessPercent = getReadinessCompletionPercent(savedReadinessLevels, savedGuideProgress);
   const maturityPercent = (maturityTouched.size / TOTAL_MATURITY_ITEMS) * 100;
 

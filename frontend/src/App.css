@@ -816,6 +816,25 @@
   color: var(--text-h);
 }
 
+/* Future reporting period — still editable, just not counted yet. */
+.readiness-table th.readiness-table__period--not-due {
+  color: var(--muted);
+}
+
+.readiness-table__not-due-label {
+  display: block;
+  font-weight: 400;
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.readiness-table__note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .readiness-table input {
   width: 64px;
   padding: 6px 8px;

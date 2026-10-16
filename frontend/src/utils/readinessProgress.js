@@ -1,5 +1,6 @@
-import { READINESS_METRICS, READINESS_YEARS, READINESS_SCALE_MIN } from "../config";
+import { READINESS_METRICS } from "../config";
 import { READINESS_LEVEL_GUIDE } from "../data/readinessLevelGuide";
+import { getDuePeriods } from "./readinessPeriods";
 
 // A level-guide "section" is one metric (CRL, TRL, ...). Any status (achieved,
 // not achieved or not applicable) counts as a bullet being answered.
@@ -19,59 +20,47 @@ export function isLevelAchieved(metric, level, progress) {
   );
 }
 
-// A level-guide section (metric) counts as complete once its level 1 is fully
-// answered — the same moment its "*" disappears on the level guide tabs.
-export function isSectionComplete(metric, progress) {
-  return isLevelComplete(metric, READINESS_SCALE_MIN, progress);
+// The single progress rule for the Innovation Readiness Level assessment,
+// shared by the level guide's progress bar and the dashboard card:
+// - total: every level-guide bullet (all levels 1–9 of the 6 metrics) plus the
+//   readiness table cells of the periods that are already due (6 per period);
+// - completed: bullets with any status set plus due cells with a value > 0
+//   (0 means "not filled in yet").
+// Periods that aren't due yet (see utils/readinessPeriods.js) count for neither.
+export function getReadinessItemCounts(readinessLevels, guideProgress, now = new Date()) {
+  let total = 0;
+  let completed = 0;
+
+  READINESS_METRICS.forEach((metric) => {
+    Object.entries(READINESS_LEVEL_GUIDE[metric]?.stages ?? {}).forEach(([level, stage]) => {
+      stage.bullets.forEach((_, index) => {
+        total += 1;
+        if (guideProgress?.[`${metric}:${level}:${index}`]) completed += 1;
+      });
+    });
+  });
+
+  getDuePeriods(now).forEach((period) => {
+    READINESS_METRICS.forEach((metric) => {
+      total += 1;
+      if ((readinessLevels?.[period]?.[metric] ?? 0) > 0) completed += 1;
+    });
+  });
+
+  return { completed, total };
 }
 
-// The KTH percentage shown on the dashboard: 50% is the readiness chart (share
-// of year × metric scores the company has filled in — 0 means "not filled
-// yet") and 50% is the level guide, where each of the 6 sections adds an equal
-// share (8.33%) once complete. Returns 0–100.
-export function getReadinessCompletionPercent(readinessLevels, guideProgress) {
-  const totalCells = READINESS_YEARS.length * READINESS_METRICS.length;
-  const filledCells = READINESS_YEARS.reduce(
-    (count, year) =>
-      count + READINESS_METRICS.filter((metric) => (readinessLevels[year]?.[metric] ?? 0) > 0).length,
-    0,
-  );
-  const chartPercent = (filledCells / totalCells) * 50;
-
-  const completeSections = READINESS_METRICS.filter((metric) =>
-    isSectionComplete(metric, guideProgress),
-  ).length;
-  const guidePercent = (completeSections / READINESS_METRICS.length) * 50;
-
-  return chartPercent + guidePercent;
+// Percentage for a completed/total pair. Only reaches 100 when every item is
+// done — 200 of 201 stays at 99.5, and the UI floors it to 99, never 100.
+export function toCompletionPercent(completed, total) {
+  if (total <= 0) return 0;
+  if (completed >= total) return 100;
+  return (completed / total) * 100;
 }
 
-// Total items across the whole Innovation Readiness Level assessment — the
-// readiness table's cells plus every bullet in the level guide, across all 6
-// metrics — counted the same way the AI Maturity Test's progress bar counts
-// its ratings (see TOTAL_MATURITY_ITEMS/maturityTouched). `completed` counts
-// filled table cells (value > 0) plus guide bullets with any status set.
-export function getReadinessItemCounts(readinessLevels, guideProgress) {
-  const totalCells = READINESS_YEARS.length * READINESS_METRICS.length;
-  const filledCells = READINESS_YEARS.reduce(
-    (count, year) =>
-      count + READINESS_METRICS.filter((metric) => (readinessLevels[year]?.[metric] ?? 0) > 0).length,
-    0,
-  );
-
-  const totalBullets = READINESS_METRICS.reduce(
-    (sum, metric) =>
-      sum +
-      Object.values(READINESS_LEVEL_GUIDE[metric]?.stages ?? {}).reduce(
-        (n, stage) => n + stage.bullets.length,
-        0,
-      ),
-    0,
-  );
-  const answeredBullets = Object.values(guideProgress).filter(Boolean).length;
-
-  return {
-    completed: filledCells + answeredBullets,
-    total: totalCells + totalBullets,
-  };
+// The KTH percentage shown on the dashboard card — same counts as the level
+// guide's progress bar. Returns 0–100.
+export function getReadinessCompletionPercent(readinessLevels, guideProgress, now = new Date()) {
+  const { completed, total } = getReadinessItemCounts(readinessLevels, guideProgress, now);
+  return toCompletionPercent(completed, total);
 }
