@@ -370,9 +370,12 @@ export default function ReadinessLevelPage() {
           <p>
             The 🚩 above the level selector marks your metric's current
             official score — it stays there even while you browse other
-            levels. The bar below the selector is your overall progress: how
-            much of the readiness table and the level guide, across every
-            metric, you've filled in so far.
+            levels. The bar below the selector is your overall progress: every
+            requirement in the level guide, across every metric, plus the
+            table scores for the periods that have already started. Once you've
+            answered every requirement of a metric, its {CURRENT_YEAR} score
+            counts as done even if no level is fully achieved yet. Future
+            periods only count once their month begins.
           </p>
           <p>
             Once you have answered every requirement of a level, the guide moves

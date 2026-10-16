@@ -1,6 +1,10 @@
-import { READINESS_METRICS } from "../config";
+import { READINESS_METRICS, READINESS_YEARS } from "../config";
 import { READINESS_LEVEL_GUIDE } from "../data/readinessLevelGuide";
 import { getDuePeriods } from "./readinessPeriods";
+
+// The period whose score the level guide sets automatically (see
+// ReadinessLevelPage's handleMarkBullet).
+const GUIDE_SCORED_PERIOD = READINESS_YEARS[0];
 
 // A level-guide "section" is one metric (CRL, TRL, ...). Any status (achieved,
 // not achieved or not applicable) counts as a bullet being answered.
@@ -20,12 +24,21 @@ export function isLevelAchieved(metric, level, progress) {
   );
 }
 
+// True when every bullet of every level (1–9) of the metric has been answered.
+export function isMetricGuideComplete(metric, progress) {
+  return Object.keys(READINESS_LEVEL_GUIDE[metric]?.stages ?? {}).every((level) =>
+    isLevelComplete(metric, level, progress),
+  );
+}
+
 // The single progress rule for the Innovation Readiness Level assessment,
 // shared by the level guide's progress bar and the dashboard card:
 // - total: every level-guide bullet (all levels 1–9 of the 6 metrics) plus the
 //   readiness table cells of the periods that are already due (6 per period);
 // - completed: bullets with any status set plus due cells with a value > 0
-//   (0 means "not filled in yet").
+//   (0 means "not filled in yet"). A GUIDE_SCORED_PERIOD cell also counts once
+//   its metric's whole guide is answered: its 0 then means no level was fully
+//   achieved, which is a real answer, not a missing one.
 // Periods that aren't due yet (see utils/readinessPeriods.js) count for neither.
 export function getReadinessItemCounts(readinessLevels, guideProgress, now = new Date()) {
   let total = 0;
@@ -43,7 +56,10 @@ export function getReadinessItemCounts(readinessLevels, guideProgress, now = new
   getDuePeriods(now).forEach((period) => {
     READINESS_METRICS.forEach((metric) => {
       total += 1;
-      if ((readinessLevels?.[period]?.[metric] ?? 0) > 0) completed += 1;
+      const filled = (readinessLevels?.[period]?.[metric] ?? 0) > 0;
+      const derivedFromGuide =
+        period === GUIDE_SCORED_PERIOD && isMetricGuideComplete(metric, guideProgress ?? {});
+      if (filled || derivedFromGuide) completed += 1;
     });
   });
 
