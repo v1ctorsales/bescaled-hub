@@ -29,6 +29,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
       ADMIN_EMAILS: ${ADMIN_EMAILS}
+      SLACK_USER_TOKEN: ${SLACK_USER_TOKEN:-}
     ports:
       # Bound to localhost only — the public, HTTPS entry point is Caddy
       # (below); this stays open just for debugging from inside the VPS
