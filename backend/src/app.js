@@ -4,7 +4,9 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
 import companiesRoutes from "./routes/companies.routes.js";
 import batchesRoutes from "./routes/batches.routes.js";
+import slackRoutes from "./routes/slack.routes.js";
 import { generalLimiter } from "./middleware/rateLimit.js";
+import { SlackIntegrationError } from "./services/slack.service.js";
 
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
 
@@ -26,6 +28,7 @@ app.use("/api", generalLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/companies", companiesRoutes);
 app.use("/api/batches", batchesRoutes);
+app.use("/api/slack", slackRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
@@ -33,6 +36,9 @@ app.use((req, res) => {
 
 // eslint-disable-next-line no-unused-vars -- Express only treats a 4-arg function as an error handler
 app.use((err, req, res, next) => {
+  if (err instanceof SlackIntegrationError) {
+    return res.status(err.status).json({ error: err.message });
+  }
   // Malformed JSON body: the client's fault, and safe to say so.
   if (err.type === "entity.parse.failed") {
     return res.status(400).json({ error: "Invalid JSON body" });

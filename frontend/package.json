@@ -10,10 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aiden0z/pptx-renderer": "1.4.0",
     "@react-oauth/google": "^0.13.5",
+    "docx-preview": "0.4.1",
     "exceljs": "^4.4.0",
+    "html2canvas": "1.4.1",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
+    "jszip": "3.10.2",
+    "pdfjs-dist": "5.4.394",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.3",

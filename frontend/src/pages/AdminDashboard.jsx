@@ -71,6 +71,9 @@ export default function AdminDashboard() {
           <div className="panel__header">
             <h2>Companies</h2>
             <div className="panel__actions">
+              <Link className="btn-secondary admin-slack-link" to="/admin/slack">
+                Slack discussions
+              </Link>
               <button
                 className="btn-secondary"
                 onClick={() => exportCompaniesXlsx(companies)}

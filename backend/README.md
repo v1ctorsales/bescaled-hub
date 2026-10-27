@@ -66,6 +66,49 @@ emails are edited in the admin UI and stored lowercase.
 
 `GOOGLE_CLIENT_SECRET` is not used (no authorization-code exchange). Never commit it or `JWT_SECRET`.
 
+## Slack discussions (admin-only)
+
+The admin dashboard has a read-only Slack discussions page at `/admin/slack`.
+The backend calls Slack's Web API; the user token never reaches the browser.
+Configure `SLACK_USER_TOKEN` as a backend secret. The admin page fetches the
+user's accessible channels and DMs first, and only requests a conversation's messages
+after an admin selects it. Every Slack endpoint requires an admin session.
+Admins can export a conversation's complete message history, thread replies, and
+attached files as a ZIP containing a styled PDF transcript and the original
+files. The transcript includes clickable link cards and thumbnails for
+supported image attachments.
+
+For a Slack sandbox workspace, configure a Slack app with these user token
+scopes, install it to the workspace, and provide the resulting user OAuth
+token (`xoxp-`) as `SLACK_USER_TOKEN`:
+
+- `channels:read` and `channels:history` for public channels
+- `groups:read` and `groups:history` for private channels
+- `im:read` and `im:history` for one-to-one DMs
+- `mpim:read` and `mpim:history` for group DMs
+- `users:read` to display message authors' names
+- `files:read` to retrieve file details and download shared files
+
+Links included in message text and Slack attachment metadata are returned
+as link cards using Slack-provided titles and descriptions; linked sites are
+not fetched for previews. PDF, PPTX, DOCX, image, and MP4 attachments are
+previewed inline. File downloads are proxied through the authenticated backend
+and are limited to files shared in the selected conversation; the user token
+is never sent to the browser.
+
+Public/private channels and one-to-one/group DMs are listed according to the
+user token's scopes. The Slack user who authorized the token must have access
+to a conversation to read its messages. After changing scopes, reinstall the
+app to the workspace so the user token receives the updated permissions. For
+the Docker Compose deployment, put the token in the repository-root `.env`
+(ignored by Git), then rebuild/restart the backend with
+`docker compose up -d --build app frontend-build` so both the backend API and
+admin page are updated. For direct local backend development, put the token in
+`backend/.env`. In Cloud Run, add the token to Secret Manager and expose it to
+the backend as `SLACK_USER_TOKEN`.
+The integration is optional, so the backend can run without these settings,
+but the Slack page will report that it is not configured.
+
 ## Proxy (Vercel rewrite)
 
 The frontend never calls this backend's Cloud Run URL directly from the
@@ -130,10 +173,9 @@ ADMIN_EMAILS: "PREENCHER_MANUALMENTE"
 ```
 
 `DATABASE_URL` and `DIRECT_URL` don't go in that file either — like
-`JWT_SECRET` and `GOOGLE_CLIENT_SECRET`, they're connection strings with a
-real password in them, so they come from Secret Manager via `--set-secrets`
-(create a `DATABASE_URL` and a `DIRECT_URL` secret there first, the same way
-`JWT_SECRET`/`GOOGLE_CLIENT_SECRET` were set up):
+`JWT_SECRET`, `GOOGLE_CLIENT_SECRET`, and `SLACK_USER_TOKEN`, they contain
+credentials, so they come from Secret Manager via `--set-secrets` (create the
+corresponding secrets there first):
 
 ```bash
 gcloud run deploy bescale-hub-backend \
@@ -142,7 +184,7 @@ gcloud run deploy bescale-hub-backend \
   --allow-unauthenticated \
   --max-instances=1 \
   --env-vars-file=env-vars.yaml \
-  --set-secrets="JWT_SECRET=JWT_SECRET:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,DATABASE_URL=DATABASE_URL:latest,DIRECT_URL=DIRECT_URL:latest"
+  --set-secrets="JWT_SECRET=JWT_SECRET:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,DATABASE_URL=DATABASE_URL:latest,DIRECT_URL=DIRECT_URL:latest,SLACK_USER_TOKEN=SLACK_USER_TOKEN:latest"
 ```
 
 `--max-instances=1` was a guard against multiple instances each getting their
@@ -154,7 +196,8 @@ removing it is a call to make separately, not part of this change.
 
 - `.env` and `backend/env-vars.yaml` are git-ignored — never commit them.
   `DATABASE_URL`/`DIRECT_URL` (like `JWT_SECRET`/`GOOGLE_CLIENT_SECRET`) hold a
-  real password and only ever go through Secret Manager or a local `.env`.
+  real password, and `SLACK_USER_TOKEN` is a credential; keep them in Secret
+  Manager or a local `.env`.
 - Unexpected errors (including Prisma/Postgres failures) are logged server-side
   only; clients get a generic `500 {"error":"Internal server error"}`.
 - All queries go through Prisma Client (parameterized) — no raw SQL.
