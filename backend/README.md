@@ -1,204 +1,168 @@
-# BeScaled Hub — backend
+# BeScaled Hub API
 
-Express API backed by **Postgres** (hosted on [Supabase](https://supabase.com)),
-accessed through **Prisma**. The public API (routes, request/response shapes)
-is documented by the code in `src/routes/` and `src/controllers/`; the data
-model lives in `prisma/schema.prisma`.
+Express API using Prisma and PostgreSQL. Start with the [root setup guide](../README.md); see [architecture](../docs/ARCHITECTURE.md) for frontend state and assessment semantics, [VPS deployment](../VPS-DEPLOY.md) for Docker, and [cloud configuration](../docs/CLOUD-DEPLOY.md) for Vercel/Cloud Run.
 
-## Setup
+## Direct local setup
 
-```bash
-npm install
-cp .env.example .env            # fill in DATABASE_URL, DIRECT_URL, GOOGLE_CLIENT_ID, JWT_SECRET, ADMIN_EMAILS
-npx prisma migrate deploy       # applies prisma/migrations to the database
-npx prisma db seed              # admins from ADMIN_EMAILS (always synced) + 6 sample companies (first run only)
-npm run dev                     # http://localhost:3001
-```
-
-While changing the schema, use `npx prisma migrate dev --name <change>`.
-
-## Database
-
-Postgres on Supabase, via two connection strings (both in `.env`, see
-`.env.example` for the exact format):
-
-- **`DATABASE_URL`** — pooled (Supavisor, transaction mode, port 6543). What
-  the running app uses for every query.
-- **`DIRECT_URL`** — used only by Prisma Migrate (`migrate dev`/`migrate deploy`),
-  which needs session-level features the transaction pooler doesn't support.
-  Supabase's actual direct host (`db.<project-ref>.supabase.co:5432`) is
-  IPv6-only; if your network can't reach it (this was the case running
-  locally during this setup), use the **Session pooler** instead — same
-  pooler host as `DATABASE_URL`, port 5432, no `?pgbouncer=true`.
-
-Unlike the SQLite setup this replaced, the database is **persistent** — it
-survives restarts and redeploys instead of resetting every time. `prisma/seed.js`
-still runs on every container start (see `start.sh`), but its two halves
-behave differently precisely because of that:
-
-- **Admins are always synced** from `ADMIN_EMAILS` (upsert by email, never
-  deletes a row) — safe to re-run on every start, so it just runs every time.
-- **Sample companies are seeded once** — only the first time the seed runs
-  against an empty `Company` table (a brand-new database). Once any company
-  exists, every later run skips company seeding entirely (logs "Companies
-  already exist — skipping company seed."), so real edits and real companies
-  are never reset by a deploy or restart. There's no flag or command to force
-  a reseed — to repopulate a test environment, run `npx prisma db seed`
-  against an empty database.
-
-## Authentication
-
-Google sign-in (ID-token flow). The frontend sends the Google ID token to
-`POST /api/auth/google`; the backend verifies it against `GOOGLE_CLIENT_ID`, then:
-
-- email in `AdminEmail` → role `admin`
-- else email in `CompanyLoginEmail` → role `company` (with that `companyId`)
-- else → `403`, no session
-
-The session is a JWT (signed with `JWT_SECRET`, 8h) in an httpOnly, `SameSite=Lax`
-cookie (`Secure` when `NODE_ENV=production`). Only `{ role, name, email, avatar, companyId }`
-is returned in bodies. `GET /api/auth/me` reads the session; `POST /api/auth/logout` clears it.
-
-Everything under `/api/companies` requires a session: admins can use every route,
-company users only the routes for their own company (`/current`, `/:id`, `/:id/...`).
-Admins are managed in the `AdminEmail` table (seeded in `prisma/seed.js`); company login
-emails are edited in the admin UI and stored lowercase.
-
-`GOOGLE_CLIENT_SECRET` is not used (no authorization-code exchange). Never commit it or `JWT_SECRET`.
-
-## Slack discussions (admin-only)
-
-The admin dashboard has a read-only Slack discussions page at `/admin/slack`.
-The backend calls Slack's Web API; the user token never reaches the browser.
-Configure `SLACK_USER_TOKEN` as a backend secret. The admin page fetches the
-user's accessible channels and DMs first, and only requests a conversation's messages
-after an admin selects it. Every Slack endpoint requires an admin session.
-Admins can export a conversation's complete message history, thread replies, and
-attached files as a ZIP containing a styled PDF transcript and the original
-files. The transcript includes clickable link cards and thumbnails for
-supported image attachments.
-
-For a Slack sandbox workspace, configure a Slack app with these user token
-scopes, install it to the workspace, and provide the resulting user OAuth
-token (`xoxp-`) as `SLACK_USER_TOKEN`:
-
-- `channels:read` and `channels:history` for public channels
-- `groups:read` and `groups:history` for private channels
-- `im:read` and `im:history` for one-to-one DMs
-- `mpim:read` and `mpim:history` for group DMs
-- `users:read` to display message authors' names
-- `files:read` to retrieve file details and download shared files
-
-Links included in message text and Slack attachment metadata are returned
-as link cards using Slack-provided titles and descriptions; linked sites are
-not fetched for previews. PDF, PPTX, DOCX, image, and MP4 attachments are
-previewed inline. File downloads are proxied through the authenticated backend
-and are limited to files shared in the selected conversation; the user token
-is never sent to the browser.
-
-Public/private channels and one-to-one/group DMs are listed according to the
-user token's scopes. The Slack user who authorized the token must have access
-to a conversation to read its messages. After changing scopes, reinstall the
-app to the workspace so the user token receives the updated permissions. For
-the Docker Compose deployment, put the token in the repository-root `.env`
-(ignored by Git), then rebuild/restart the backend with
-`docker compose up -d --build app frontend-build` so both the backend API and
-admin page are updated. For direct local backend development, put the token in
-`backend/.env`. In Cloud Run, add the token to Secret Manager and expose it to
-the backend as `SLACK_USER_TOKEN`.
-The integration is optional, so the backend can run without these settings,
-but the Slack page will report that it is not configured.
-
-## Proxy (Vercel rewrite)
-
-The frontend never calls this backend's Cloud Run URL directly from the
-browser. `frontend/vercel.json` rewrites `/api/*` on the frontend's own domain
-to the Cloud Run backend, server-side (Vercel → Cloud Run, no CORS involved —
-the browser never sees the Cloud Run domain at all). As far as the browser is
-concerned, the API is same-site with the page, which is what lets the session
-cookie use `SameSite=Lax` in every environment instead of `SameSite=None`.
-
-This exists because `SameSite=None` (required for a real cross-site cookie,
-frontend on `vercel.app` calling a backend on `run.app`) was causing
-intermittent login failures in production: some browsers' cross-site tracking
-protections (Safari ITP most notably, but not only there) can silently drop
-or block that kind of cookie in ways that aren't fully predictable — a login
-would succeed, then the very next request would come back `401` seconds
-later, non-deterministically. Routing through a same-site proxy removes the
-whole class of problem instead of working around it browser by browser.
-
-Two things this changes:
-
-- The frontend calls a relative path (`/api`) in production, not the Cloud
-  Run URL — see `VITE_API_BASE_URL` in `frontend/.env.example`.
-- `frontend/vercel.json`'s rewrite carries an
-  `x-vercel-enable-rewrite-caching: 0` header on `/api/*`. Vercel caches
-  rewritten responses that carry upstream cache headers by default; this API
-  is entirely session-scoped and per-company, so caching any of it — even by
-  accident — could leak one user's data to another. Keep that header even if
-  the backend never sends explicit cache headers today.
-
-`backend/src/app.js`'s CORS (`cors({ origin: FRONTEND_ORIGIN, credentials:
-true })`) is untouched and still relevant for local dev (frontend calls the
-backend directly there) and for manual testing (curl/Postman) — it's just no
-longer what real browser traffic in production relies on, since that traffic
-now looks like Vercel calling Cloud Run server-to-server.
-
-## Layout
-
-- `prisma/schema.prisma` — data model (Postgres) · `prisma/migrations/` — committed SQL migrations
-- `prisma/seed.js` + `prisma/seed-data.json` — sample data
-- `src/db/prismaClient.js` — the single shared `PrismaClient`
-- `src/db/companySerializer.js` — turns DB rows back into the API's JSON shapes
-- `src/utils/validation.js` — request-body validation (rejects with `400` before touching the DB)
-
-## Deploy (Cloud Run)
-
-Source-based deploy (`--source .`) — builds and runs `backend/Dockerfile`, whose
-entrypoint (`start.sh`) applies migrations, seeds the database and starts the
-server on every container start. Non-secret config is passed via
-`--env-vars-file` rather than `--set-env-vars`: a single `--set-env-vars`
-string couldn't carry `ADMIN_EMAILS` correctly (the `@` and `;` in its value
-collided with that flag's own comma-separated format).
-
-Before your first deploy, create `backend/env-vars.yaml` (git-ignored — not
-versioned, since it holds real admin emails; every deployer creates their own
-copy) from this example, filling in `ADMIN_EMAILS`:
-
-```yaml
-NODE_ENV: production
-GOOGLE_CLIENT_ID: "411205543016-jjfqjjttaplrt0ulnab649j41m9v1tm2.apps.googleusercontent.com"
-FRONTEND_ORIGIN: "https://bescaled-hub.vercel.app"
-ADMIN_EMAILS: "PREENCHER_MANUALMENTE"
-```
-
-`DATABASE_URL` and `DIRECT_URL` don't go in that file either — like
-`JWT_SECRET`, `GOOGLE_CLIENT_SECRET`, and `SLACK_USER_TOKEN`, they contain
-credentials, so they come from Secret Manager via `--set-secrets` (create the
-corresponding secrets there first):
+Run these commands from `backend/`. Create `.env` only if it does not already exist, then replace its placeholders before generating or migrating:
 
 ```bash
-gcloud run deploy bescale-hub-backend \
-  --source . \
-  --region europe-west1 \
-  --allow-unauthenticated \
-  --max-instances=1 \
-  --env-vars-file=env-vars.yaml \
-  --set-secrets="JWT_SECRET=JWT_SECRET:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,DATABASE_URL=DATABASE_URL:latest,DIRECT_URL=DIRECT_URL:latest,SLACK_USER_TOKEN=SLACK_USER_TOKEN:latest"
+npm ci
+cp -n .env.example .env
+npx prisma generate
+npx prisma migrate deploy
+npx prisma db seed
+npm run dev
 ```
 
-`--max-instances=1` was a guard against multiple instances each getting their
-own isolated SQLite file; Postgres handles concurrent connections from
-several instances fine, so it's no longer strictly needed. Left as-is —
-removing it is a call to make separately, not part of this change.
+`npm run dev` uses Node’s watch mode; `npm start` runs normally. Unlike the container entrypoint, these commands do not automatically migrate or seed. The default port is 3001. There is no endpoint at `/`; use `/api/auth/me` to check API reachability (401 is expected without a session).
 
-## Security notes
+## Environment
 
-- `.env` and `backend/env-vars.yaml` are git-ignored — never commit them.
-  `DATABASE_URL`/`DIRECT_URL` (like `JWT_SECRET`/`GOOGLE_CLIENT_SECRET`) hold a
-  real password, and `SLACK_USER_TOKEN` is a credential; keep them in Secret
-  Manager or a local `.env`.
-- Unexpected errors (including Prisma/Postgres failures) are logged server-side
-  only; clients get a generic `500 {"error":"Internal server error"}`.
-- All queries go through Prisma Client (parameterized) — no raw SQL.
-- The process disconnects Prisma on `SIGINT`/`SIGTERM` so connections close cleanly.
+| Variable | Behavior |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL URL used by both Prisma Client and Prisma Migrate; required for database operations |
+| `GOOGLE_CLIENT_ID` | Required at server startup; audience for Google ID token verification |
+| `JWT_SECRET` | Required at server startup; private signing key for eight-hour sessions |
+| `PORT` | Default `3001`; Compose passes `8080` |
+| `FRONTEND_ORIGIN` | One allowed browser origin for credentialed CORS; default `http://localhost:5173` |
+| `ADMIN_EMAILS` | Semicolon-separated emails added by `prisma db seed`; not consulted directly on each login |
+| `SLACK_USER_TOKEN` | Optional `xoxp-` user OAuth token for the shared Slack connection |
+| `NODE_ENV` | `production` enables Secure session cookies; production needs HTTPS at the proxy |
+
+`server.js` loads `.env` from the current working directory. Run direct backend commands from this directory. Root `.env` supplies Docker Compose instead. `GOOGLE_CLIENT_SECRET` and `DIRECT_URL` are not used by the current code/schema.
+
+## Database and seeding
+
+The schema uses one `DATABASE_URL` without a `directUrl`. Self-hosted PostgreSQL in Compose is a plain connection. If using managed PostgreSQL, choose a connection URL that supports Prisma migrations as well as runtime queries; old instructions for separate Supabase pooled/direct URLs no longer describe this schema.
+
+- `prisma/schema.prisma`: model definitions.
+- `prisma/migrations/`: committed SQL migrations, including the initial PostgreSQL schema.
+- `src/db/prismaClient.js`: shared application Prisma Client.
+- `src/db/companySerializer.js`: normalized rows to nested API JSON.
+- `prisma/seed.js` and `seed-data.json`: admin provisioning and six sample companies.
+
+On each seed, administrator emails are trimmed, lowercased, and upserted. **Removing an email from `ADMIN_EMAILS` does not remove its database row.** Admin revocation requires a deliberate database change, and existing JWT sessions can remain valid until expiry.
+
+Sample companies are created only when the Company table is empty. If any company exists, all sample company seeding is skipped. Startup does not reset existing assessment data. An empty database receives the samples even when intended for production; plan initial data provisioning accordingly. There is no force-reseed or sample-data-disable flag. Sample rows use explicit IDs from JSON; when preparing an empty database, verify the Company ID sequence before adding new records.
+
+For schema development, run against a development database:
+
+```bash
+npx prisma migrate dev --name describe_change
+```
+
+Commit the schema and resulting SQL migration together. Apply committed migrations with `npx prisma migrate deploy` in deployment. The container’s `start.sh` runs migration deploy, seed, then the server on every start; `set -e` stops startup if either preceding step fails.
+
+## Authentication and authorization
+
+`POST /api/auth/google` accepts `{ "credential": "<Google ID token>" }`. Verification checks the configured audience and verified email. `AdminEmail` takes priority; otherwise the first matching `CompanyLoginEmail` identifies the company. Unknown emails get 403.
+
+The public session shape is `{ role, name, email, avatar, companyId }`. The JWT remains in an HTTP-only `bescaled_session` cookie, using HS256, an eight-hour TTL, `SameSite=Lax`, path `/`, and Secure in production. `GET /api/auth/me` returns the session or 401; `POST /api/auth/logout` clears the cookie. Requests must include the cookie (`credentials: "include"` in browser fetch).
+
+All company routes require authentication. Admins can access all companies; company users can access only their signed company ID. Company creation, settings, deletion, the directory, batch dates, and Slack are admin-only. `/companies/current` is for company sessions; admins have no current company and receive 404. Permissions are stored in session claims until expiry, rather than rechecked against email tables on every request.
+
+## API reference
+
+All paths below start with `/api`. Successful JSON responses use the named object/array directly, without a common envelope. Errors use `{ "error": "message" }`. Company objects include `id`, `name`, `contactEmail`, `subscribed`, the two filled flags, and nested `settings`, `readinessLevels`, `maturityAnswers`, `guideProgress`.
+
+### Authentication
+
+| Method and path | Request | Response |
+| --- | --- | --- |
+| `POST /auth/google` | `{ credential }` | Public session and session cookie |
+| `GET /auth/me` | None | Public session |
+| `POST /auth/logout` | None | `{ success: true }` and cleared cookie |
+
+### Companies
+
+| Method and path | Access | Request / response |
+| --- | --- | --- |
+| `GET /companies` | Admin | Array of full company objects |
+| `GET /companies/current` | Company | Own full company object |
+| `GET /companies/:id` | Admin or own company | Full company object |
+| `POST /companies` | Admin | `{ name, contactEmail, loginEmails?, description?, batch? }` → created company, 201 |
+| `PATCH /companies/:id/settings` | Admin | `{ loginEmails, description, batch }` → updated company (all three required) |
+| `DELETE /companies/:id` | Admin | Deletes company and child assessment/login rows; 204 |
+
+Names must be non-empty and at most 200 characters; emails at most 254. Descriptions allow up to 2,000 characters. Login emails are normalized and limited to three; duplicates or emails assigned to an admin/another company are rejected (conflicts return 409). Creation defaults an empty login list to the contact email, description to empty, batch to 1. Updating settings with an empty login list removes company login access. The UI requires a description even though the API permits empty text. The settings UI does not edit company name, contact email, or subscribed status.
+
+### Readiness and guide progress
+
+All paths in this table are beneath `/companies/:id`; access is admin or that company.
+
+| Method and path | Request / response |
+| --- | --- |
+| `GET /readiness-level` | Nested period → metric → score object |
+| `PATCH /readiness-level` | `{ year, metric, value }` → updated scores; sets filled flag |
+| `PUT /readiness-level` | `{ readinessLevels, guideProgress }` → `{ readinessLevels, guideProgress, filled: true }` |
+| `GET /readiness-level/filled` | `{ filled }` |
+| `GET /guide-progress` | Object keyed like `CRL:1:0` |
+| `PATCH /guide-progress` | `{ metric, level, bulletIndex, status? }` → updated guide object |
+
+Allowed periods are `10/2026`, `02/2027`, `09/2027`; metrics are CRL, TRL, BRL, IPRL, TmRL, FRL. Scores must be integers 0–9, levels 1–9, bullet indexes 0–99. Guide statuses are `achieved`, `not-achieved`, `not-applicable`. The server validates bounds, not actual rubric bullet existence.
+
+The company UI uses the whole-form PUT. Scores supplied are upserted; omitted score cells remain. Guide progress is a replacement snapshot (up to 500 entries): omitted keys are deleted. Both save atomically and mark readiness as filled; this is not a completeness check.
+
+The standalone guide PATCH is a toggle: omitting/nulling status or repeating the current status clears the row. It does not set the readiness filled flag.
+
+Example whole-form body (a partial score map is valid):
+
+```json
+{
+  "readinessLevels": { "10/2026": { "CRL": 2, "TRL": 3 } },
+  "guideProgress": { "CRL:1:0": "achieved" }
+}
+```
+
+### AI maturity
+
+All paths below are beneath `/companies/:id`; access is admin or that company.
+
+| Method and path | Request / response |
+| --- | --- |
+| `GET /maturity-test` | `{ answers, filled }`; answers nested by dimension/stage |
+| `PATCH /maturity-test/answers` | `{ dimensionId, stageId, patch: { score?, comment?, dontUnderstand? } }` → updated answers |
+| `POST /maturity-test/submit` | No body needed → `{ filled: true }` |
+
+Scores are integers 0–4; comments are at most 5,000 characters; `dontUnderstand` is boolean. Dimension/stage IDs must be lowercase slugs up to 64 characters; their membership in the frontend rubric is not checked. Submit sets the flag without checking all items and does not lock edits.
+
+### Batches
+
+Admin-only `GET /batches` returns nine entries `{ batch, startDate, endDate }`, with unset dates null. `PUT /batches` accepts `{ batches: [{ batch: 1, startDate: "10/2026", endDate: "09/2027" }] }` and returns the updated nine-entry list. Only supplied batches change. Dates are optional MM/YYYY months in years 2000–2100, with end no earlier than start. Supplying both empty/null removes the saved schedule. Batch numbers are 1–9, each at most once per request. These dates do not change assessment reporting periods.
+
+### Slack
+
+Admin-only, using the shared server token:
+
+| GET path | Query / response |
+| --- | --- |
+| `/slack/channels` | Accessible conversation array, including type and membership |
+| `/slack/channels/:channelId/messages` | `cursor?`, `limit?` (1–100, default 50) → `{ messages, nextCursor }` |
+| `/slack/channels/:channelId/replies` | Required thread `ts`, `cursor?`, `limit?` (1–100, default 100) → `{ messages, nextCursor }` |
+| `/slack/channels/:channelId/files/:fileId` | Streams a file shared in the selected conversation |
+
+Slack JSON/file responses set `Cache-Control: private, no-store`. The token stays server-side. Link cards use Slack metadata; the backend does not fetch arbitrary linked websites. Only supported Slack file URLs are proxied, following file/conversation association checks. Exports are browser-side operations built from these endpoints, not separate API routes.
+
+## Slack configuration
+
+Set `SLACK_USER_TOKEN` to the connected account’s user OAuth token (`xoxp-`). The app reads public/private channels and one-to-one/group DMs according to the account’s access and these scopes:
+
+| Scope group | Required user scopes |
+| --- | --- |
+| Public channels | `channels:read`, `channels:history` |
+| Private channels | `groups:read`, `groups:history` |
+| Direct messages | `im:read`, `im:history` |
+| Group direct messages | `mpim:read`, `mpim:history` |
+| Author names | `users:read` |
+| Shared files | `files:read` |
+
+Reinstall the Slack app after scope changes. The connected user must belong to conversations for exports. The backend starts without Slack configured; Slack requests then return a configuration error. Local setup uses `backend/.env`; Compose uses root `.env`; cloud deployments should inject the token as a runtime secret. All portal admins see this connection, not their individual Slack accounts.
+
+## Errors and request limits
+
+Common statuses: 400 invalid input, 401 missing/invalid/expired session or Google credential, 403 forbidden, 404 missing resource, 409 login-email conflict, 429 rate-limited, 500 unexpected server error. Slack integration errors can also return 502 or 503. Unexpected details stay in server logs; malformed JSON returns a specific 400.
+
+`src/middleware/rateLimit.js` applies a per-IP limit of **100 requests per 15 minutes** to `/api`, and **10 login requests per 15 minutes** to `/api/auth/google`. The limiter uses process-local memory, not shared database state. Answer autosaves and paginated Slack exports count toward the general limit. Slack itself can also return rate-limit errors; the current code does not automatically retry.
+
+`app.set("trust proxy", 1)` trusts one reverse-proxy hop. Check the actual proxy topology before changing hosting or relying on client IP rate limits. CORS allows the configured `FRONTEND_ORIGIN` with credentials; it does not replace authentication. Same-origin production proxying supports Lax cookies without third-party-cookie dependencies. Never cache authenticated API responses at a shared proxy.

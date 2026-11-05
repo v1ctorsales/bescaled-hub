@@ -1,10 +1,9 @@
 #!/bin/sh
 # Container entrypoint, run on every start:
 #   1. apply any pending migrations
-#   2. seed (admins from ADMIN_EMAILS + sample companies; idempotent upserts,
-#      see prisma/seed.js — safe to run against a database that's already
-#      been seeded, but note it re-applies the 6 sample companies' data
-#      every time, so a company edited since the last deploy gets reset)
+#   2. seed (admins are upserted from ADMIN_EMAILS; six sample companies are
+#      created only when the Company table is empty; existing companies are
+#      never reset — see prisma/seed.js)
 #   3. start the API
 #
 # The database (Postgres) is persistent — see backend/README.md — unlike the

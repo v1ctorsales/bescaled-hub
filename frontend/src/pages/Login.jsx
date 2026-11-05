@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { homePathFor } from "../utils/homePath";
 import Modal from "../components/Modal";
 import logo from "../assets/bescaled1.png";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function Login() {
   const { user, loading, loginWithGoogle } = useAuth();
@@ -36,6 +37,7 @@ export default function Login() {
 
   return (
     <div className="login-page">
+      <div className="login-page__theme"><ThemeToggle /></div>
       <div className="login-card">
         <div className="login-card__logo-wrap">
           <img src={logo} alt="BeScaled" className="login-card__logo" />

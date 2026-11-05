@@ -4,6 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import './index.css'
 import App from './App.jsx'
+import { initializeTheme } from './utils/theme'
+
+// Apply the saved or device theme before mounting the interface.
+initializeTheme()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

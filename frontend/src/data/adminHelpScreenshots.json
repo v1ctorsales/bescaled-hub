@@ -1,0 +1,170 @@
+{
+  "dashboard": [
+    {
+      "src": "/help/admin/company-directory.png",
+      "width": 1080,
+      "height": 480,
+      "alt": "Company directory showing summary counts, batch dates, assessment statuses and action buttons",
+      "caption": "The company directory displays summary counts, batch dates, assessment statuses, and company actions."
+    }
+  ],
+  "add-company": [
+    {
+      "src": "/help/admin/add-company.png",
+      "width": 520,
+      "height": 594,
+      "alt": "Add company dialog with company name, contact email, login email, description and batch",
+      "caption": "The Add company form records company details, permitted Google accounts, and a batch assignment."
+    }
+  ],
+  "company-settings": [
+    {
+      "src": "/help/admin/company-settings.png",
+      "width": 520,
+      "height": 570,
+      "alt": "Company settings dialog showing login emails, description, batch and Save button",
+      "caption": "Company settings contain editable login emails, an internal description, and the batch assignment. Save stores changes."
+    }
+  ],
+  "delete-company": [
+    {
+      "src": "/help/admin/delete-company.png",
+      "width": 520,
+      "height": 628,
+      "alt": "Company deletion confirmation with a permanent deletion warning and Cancel button",
+      "caption": "The confirmation identifies the company and describes permanent deletion. Cancel returns to settings."
+    }
+  ],
+  "batches": [
+    {
+      "src": "/help/admin/batch-dates.png",
+      "width": 520,
+      "height": 476,
+      "alt": "Edit batches dialog with start and end month fields for batches one through nine",
+      "caption": "Batch start and end dates use MM/YYYY. Unscheduled batches can have empty dates."
+    }
+  ],
+  "readiness": [
+    {
+      "src": "/help/admin/innovation-readiness.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": "Company readiness results with three reporting periods, score table and radar chart",
+      "caption": "The admin KTH tab compares six readiness areas across three reporting periods."
+    },
+    {
+      "src": "/help/admin/kth-level-guide.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": "KTH level guide with area tabs, current level marker and requirement answer statuses",
+      "caption": "Area tabs display each readiness area’s level requirements and saved company answers."
+    }
+  ],
+  "exports": [
+    {
+      "src": "/help/admin/company-report-actions.png",
+      "width": 990,
+      "height": 56,
+      "alt": "Company details header with Export XLSX and Export PDF buttons",
+      "caption": "Company details provide Export XLSX and Export PDF controls. Directory exports are available on the main company list."
+    }
+  ],
+  "maturity": [
+    {
+      "src": "/help/admin/ai-maturity.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": "AI maturity results showing stage ratings, comments and a clarification flag",
+      "caption": "The admin AI Maturity Test tab displays each stage’s score, comment, and clarification flag."
+    }
+  ],
+  "slack": [
+    {
+      "src": "/help/admin/slack-discussions.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": "Slack conversation explorer showing conversation selection, export buttons, a message and its reply",
+      "caption": "The conversation explorer contains conversation selection, message threads, and conversation archive export controls."
+    }
+  ],
+  "company-sign-in": [
+    {
+      "src": "/help/admin/participant-dashboard.png",
+      "width": 1080,
+      "height": 410,
+      "alt": "Company dashboard with KTH readiness and AI maturity cards, progress percentages and assessment buttons",
+      "caption": "Registered company accounts open this dashboard. Assessment buttons display Start assessment, Continue assessment, or Edit assessment according to progress."
+    }
+  ],
+  "company-readiness": [
+    {
+      "src": "/help/admin/participant-kth-guide.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": "Editable company KTH guide with readiness area tabs, level selector and Achieved, Not achieved and Not applicable buttons",
+      "caption": "Company view: area tabs and level numbers select requirements. Each requirement accepts Achieved, Not achieved, or Not applicable."
+    },
+    {
+      "src": "/help/admin/participant-kth-scores.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": "Company readiness score inputs, radar chart, reporting periods and Submit answers button",
+      "caption": "The editable score table and radar chart display reporting-period results. Submit answers stores the table scores and guide answers together."
+    },
+    {
+      "src": "/help/admin/participant-kth-help.png",
+      "width": 520,
+      "height": 720,
+      "alt": "Company level guide help explaining requirement answers, automatic score increases and Submit answers",
+      "caption": "About the level guide describes requirement answers, automatic score increases, progress, and submission."
+    }
+  ],
+  "company-maturity": [
+    {
+      "src": "/help/admin/participant-ai-intro.png",
+      "width": 1080,
+      "height": 440,
+      "alt": "Company AI Maturity Test introduction with Start test and assessment export buttons",
+      "caption": "A new AI maturity assessment displays an introduction and Start test."
+    },
+    {
+      "src": "/help/admin/participant-ai-ratings.png",
+      "width": 990,
+      "height": 994,
+      "alt": "Editable company AI maturity stages showing score buttons, comments and clarification controls",
+      "caption": "Company view: each stage has score buttons, a comment field, and a clarification control. This example shows an assessment reopened after submission."
+    },
+    {
+      "src": "/help/admin/participant-ai-save.png",
+      "width": 990,
+      "height": 68,
+      "alt": "Submitted company AI maturity assessment showing confirmation and Save changes button",
+      "caption": "The submitted assessment displays a confirmation and Save changes. Before the first submission, the button is labeled Submit answers."
+    }
+  ],
+  "company-follow-up": [
+    {
+      "src": "/help/admin/innovation-readiness.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": "Company readiness results with three reporting periods, score table and radar chart",
+      "caption": "Admin view: the KTH tab displays the company’s saved reporting-period scores and radar chart."
+    },
+    {
+      "src": "/help/admin/ai-maturity.png",
+      "width": 1440,
+      "height": 1000,
+      "alt": "AI maturity results showing stage ratings, comments and a clarification flag",
+      "caption": "Admin view: submitted AI maturity results include ratings, comments, and Unclear flags."
+    }
+  ],
+  "login": [
+    {
+      "src": "/help/admin/login.png",
+      "width": 1000,
+      "height": 750,
+      "alt": "BeScaled Hub login screen showing the Terms of Use agreement and Sign in with Google button",
+      "caption": "The login screen contains the Terms of Use agreement and Google sign-in. Administrator accounts open the company directory after sign-in."
+    }
+  ]
+}

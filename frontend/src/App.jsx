@@ -11,6 +11,7 @@ import MaturityTestPage from "./pages/MaturityTestPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import CompanyDetailPage from "./pages/CompanyDetailPage";
 import SlackDiscussionsPage from "./pages/SlackDiscussionsPage";
+import AdminHelpPage from "./pages/AdminHelpPage";
 import "./App.css";
 
 const Admin = ({ children }) => <RequireRole role="admin">{children}</RequireRole>;
@@ -38,6 +39,7 @@ function App() {
           <Route path="/dashboard/readiness" element={<Company><ReadinessLevelPage /></Company>} />
           <Route path="/dashboard/maturity-test" element={<Company><MaturityTestPage /></Company>} />
           <Route path="/admin" element={<Admin><AdminDashboard /></Admin>} />
+          <Route path="/admin/help" element={<Admin><AdminHelpPage /></Admin>} />
           <Route path="/admin/slack" element={<Admin><SlackDiscussionsPage /></Admin>} />
           <Route path="/admin/companies/:id" element={<Admin><CompanyDetailPage /></Admin>} />
           <Route path="*" element={<Navigate to="/login" replace />} />

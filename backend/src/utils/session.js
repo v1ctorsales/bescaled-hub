@@ -5,17 +5,11 @@ const SESSION_TTL_SECONDS = 60 * 60 * 8; // 8 hours
 
 // Same attributes must be used to set and to clear the cookie.
 //
-// The browser only ever talks to the frontend's own site (Vercel) — in
-// production, frontend/vercel.json rewrites `/api/*` to the Cloud Run
-// backend server-side (see backend/README.md — "Proxy (Vercel rewrite)"),
-// so as far as the browser can tell, this cookie is being set by the same
-// site the page is on. That makes it same-site in every environment, so
-// SameSite=Lax always works — no need for SameSite=None (which requires
-// Secure, and which some browsers' cross-site tracking protections — Safari
-// ITP in particular, though not only there — can silently drop or block in
-// ways that were causing intermittent login failures in production before
-// this proxy existed). `secure` still follows NODE_ENV: dev runs over plain
-// HTTP (localhost), where a Secure cookie can't be set at all.
+// Production proxies /api through the frontend origin: Caddy on the VPS or
+// Vercel rewrites for Cloud Run. SameSite=Lax works with both configurations
+// without third-party cookies. See VPS-DEPLOY.md and docs/CLOUD-DEPLOY.md at
+// the repository root. Secure follows NODE_ENV: production requires HTTPS,
+// while local development uses plain HTTP.
 function cookieOptions() {
   const isProd = process.env.NODE_ENV === "production";
   return {
