@@ -1,4 +1,5 @@
-:root {
+:root,
+.slack-export-render-root {
   --text: #4b4a55;
   --text-h: #16171d;
   --bg: #f6f7fb;
@@ -7,6 +8,12 @@
   --accent: #2e5cff;
   --accent-hover: #1e46d6;
   --accent-bg: rgba(46, 92, 255, 0.08);
+  --accent-solid: #2e5cff;
+  --accent-solid-hover: #1e46d6;
+  --danger-solid: #d92d20;
+  --chart-first: #2e5cff;
+  --chart-second: #c66b00;
+  --chart-third: #8b5e34;
   --secondary: #18baa8;
   --secondary-hover: #139385;
   --secondary-bg: rgba(24, 186, 168, 0.1);
@@ -30,6 +37,35 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --text: #cbd2e1;
+  --text-h: #f1f4fa;
+  --bg: #10151f;
+  --surface: #1a2230;
+  --border: #364257;
+  --accent: #a5b8ff;
+  --accent-hover: #c3cfff;
+  --accent-bg: rgba(133, 161, 255, 0.15);
+  --accent-solid: #4264d8;
+  --accent-solid-hover: #3656c5;
+  --secondary: #52d6c5;
+  --secondary-hover: #83e7da;
+  --secondary-bg: rgba(82, 214, 197, 0.12);
+  --success: #5cddb0;
+  --success-bg: rgba(92, 221, 176, 0.12);
+  --danger: #ff9c96;
+  --danger-bg: rgba(255, 156, 150, 0.12);
+  --muted: #a6b1c5;
+  --muted-bg: rgba(166, 177, 197, 0.12);
+  --pending: #efc66b;
+  --pending-bg: rgba(239, 198, 107, 0.12);
+  --chart-first: #a5b8ff;
+  --chart-second: #ffba66;
+  --chart-third: #dba779;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 * {

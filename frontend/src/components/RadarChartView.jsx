@@ -19,9 +19,9 @@ import { monthYearToIndex } from "../utils/validation";
 
 // Blue / orange / brown.
 const YEAR_COLORS = {
-  0: "#2E5CFF",
-  1: "#FF8A00",
-  2: "#8B5E34",
+  0: "var(--chart-first)",
+  1: "var(--chart-second)",
+  2: "var(--chart-third)",
 };
 
 // readinessLevels: { [year]: { CRL, TRL, BRL, IPRL, TmRL, FRL } }
@@ -50,12 +50,14 @@ export default function RadarChartView({ readinessLevels, years }) {
   return (
     <ResponsiveContainer width="100%" height={360}>
       <RadarChart data={data} outerRadius="75%">
-        <PolarGrid />
-        <PolarAngleAxis dataKey="metric" />
+        <PolarGrid stroke="var(--border)" />
+        <PolarAngleAxis dataKey="metric" tick={{ fill: "var(--text)" }} />
         <PolarRadiusAxis
           angle={30}
           domain={[READINESS_SCALE_MIN, READINESS_SCALE_MAX]}
           tickCount={READINESS_SCALE_MAX - READINESS_SCALE_MIN + 1}
+          tick={{ fill: "var(--muted)" }}
+          stroke="var(--border)"
         />
         {sortedYears.map((year, i) => (
           <Radar
@@ -76,7 +78,7 @@ export default function RadarChartView({ readinessLevels, years }) {
             color: YEAR_COLORS[i % 3],
           }))}
         />
-        <Tooltip />
+        <Tooltip contentStyle={{ background: "var(--surface)", color: "var(--text-h)", borderColor: "var(--border)" }} />
       </RadarChart>
     </ResponsiveContainer>
   );

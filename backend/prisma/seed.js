@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { readFileSync } from "node:fs";
 
 // Runs on every container start (see start.sh), against a persistent
-// Postgres database (Supabase) — so the two halves behave differently:
+// Postgres database — so the two halves behave differently:
 // - Admins are always synced from ADMIN_EMAILS (upsert by email; never
 //   deletes a row, so it's safe to re-run on every start).
 // - Sample companies are seeded only once, the first time this runs against

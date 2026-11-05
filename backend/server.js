@@ -16,8 +16,7 @@ const server = app.listen(PORT, () => {
   console.log(`BeScaled Hub API listening on http://localhost:${PORT}`);
 });
 
-// Stop accepting requests, then close the DB connection cleanly so SQLite
-// doesn't leave a stale journal/lock file behind.
+// Stop accepting requests, then release the Prisma/PostgreSQL connections.
 async function shutdown(signal) {
   console.log(`${signal} received, shutting down...`);
   server.close();

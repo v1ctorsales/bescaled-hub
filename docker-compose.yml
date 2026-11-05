@@ -58,9 +58,8 @@ services:
       frontend-build:
         condition: service_completed_successfully
     environment:
-      # The public hostname to serve and get a cert for. Currently the
-      # host zone.ee provided; swap to the university's domain later by
-      # changing this one value (in .env) — see Caddyfile.
+      # Backend-only hostname. The university frontend hostname has a
+      # separate block in Caddyfile; changing SITE_DOMAIN does not change it.
       SITE_DOMAIN: ${SITE_DOMAIN}
     ports:
       - "80:80"

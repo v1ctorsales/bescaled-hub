@@ -43,7 +43,7 @@ app.use((err, req, res, next) => {
   if (err.type === "entity.parse.failed") {
     return res.status(400).json({ error: "Invalid JSON body" });
   }
-  // Anything else (Prisma/SQLite included): details stay in the server log,
+  // Anything else (Prisma/PostgreSQL included): details stay in the server log,
   // the client only gets a generic message.
   console.error(`[${req.method} ${req.originalUrl}]`, err);
   res.status(500).json({ error: "Internal server error" });

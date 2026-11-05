@@ -1,0 +1,39 @@
+.admin-help__intro { max-width: 740px; }
+.admin-help__intro h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.2; }
+.admin-help__eyebrow { color: var(--accent); font-weight: 700; font-size: 13px; }
+.admin-help__search { display: grid; gap: 8px; margin-top: 24px; font-weight: 600; color: var(--text-h); }
+.admin-help__search input { width: 100%; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text-h); padding: 12px 14px; font-size: 16px; }
+.admin-help__count { color: var(--muted); font-size: 13px; }
+.admin-help__image-note { color: var(--muted); font-size: 14px; }
+.admin-help__figure { margin: 8px 0 0; }
+.admin-help__figure a { display: block; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.admin-help__figure a:hover { border-color: var(--accent); }
+.admin-help__figure img { display: block; width: 100%; height: auto; background: var(--surface); }
+.admin-help__figure figcaption { margin-top: 10px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.admin-help__layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 28px; align-items: start; }
+.admin-help__nav { position: sticky; top: 100px; display: flex; flex-direction: column; gap: 6px; max-height: calc(100dvh - 120px); overflow-y: auto; padding: 4px; }
+.admin-help__nav h2 { font-size: 14px; margin-bottom: 8px; }
+.admin-help__nav-group { margin: 20px 0 4px; font-size: 13px; font-weight: 700; color: var(--text-h); }
+.admin-help__group-title { margin: 16px 0 0; font-size: 25px; }
+.admin-help__nav a { color: var(--text); text-decoration: none; padding: 6px 0; font-size: 14px; }
+.admin-help__nav a:hover { color: var(--accent); text-decoration: underline; }
+.admin-help__nav a.is-active { color: var(--accent); font-weight: 700; }
+.admin-help__nav button { align-self: start; margin-top: 8px; }
+.admin-help__topics { min-width: 0; display: grid; gap: 20px; }
+.admin-help__topic { scroll-margin-top: 100px; overflow-wrap: anywhere; gap: 12px; }
+.admin-help__topic > h2, .admin-help__topic > h3 { font-size: 21px; }
+.admin-help__summary { color: var(--muted); }
+.admin-help__topic p, .admin-help__topic li { line-height: 1.75; }
+.admin-help__topic > p { margin: 0; }
+.admin-help__topic li + li { margin-top: 10px; }
+.admin-help__topic ol { padding-left: 24px; }
+.admin-help a:focus-visible, .admin-help input:focus-visible, .admin-help button:focus-visible,
+.app-header__help:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.app-header__help { white-space: nowrap; text-decoration: none; }
+@media (max-width: 720px) {
+  .admin-help__layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .admin-help__nav { position: static; max-height: none; overflow-y: visible; }
+  .app-header:has(.app-header__help) { flex-wrap: wrap; gap: 12px; padding: 12px 16px; }
+  .app-header:has(.app-header__help) .app-header__user { flex-wrap: wrap; }
+  .admin-help__topic { scroll-margin-top: 160px; }
+}
